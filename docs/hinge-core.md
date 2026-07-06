@@ -16,7 +16,7 @@ HINGE is a fortnightly rotation that answers one question every day: *which pare
 
 **Primary owns the day.** Drop-off through pickup and everything in between. There is no ambiguity about who is running the operation on a given day.
 
-**Blocks are the unit.** A single free day is a gift. Two or more contiguous free days are a different thing entirely — they have momentum. Projects resume, context reloads, work compounds. HINGE guarantees each parent a block of two or more free weekdays every week, every week.
+**Blocks are the unit.** A single free day is a gift. Two or more contiguous free days are a different thing entirely — they have momentum. Projects resume, context reloads, work compounds. HINGE guarantees each parent a meaningful block of free days every week.
 
 **Equity is structural.** The rotation is designed so fairness is built in, not negotiated after the fact. Over any two-week cycle, both parents carry exactly the same number of primary days. No one is keeping score because the score is always tied.
 
@@ -32,44 +32,72 @@ HINGE is a fortnightly rotation that answers one question every day: *which pare
 
 - Two children, same school, same hours.
 - Both parents are intentionally unemployed — no external job schedule to route around.
+- The active week is Monday through Saturday. Sunday is church and family — outside the rotation entirely.
 - Weekdays are externally structured by school. Weekends are not.
-- Sunday is church and family — outside the rotation entirely.
+
+---
+
+## Variants
+
+HINGE comes in two block-length variants. Both share the same active week (Mon–Sat), the same ISO week anchor, the same principles, and the same categorical rules. The only difference is how many days constitute a block. The variant is chosen deliberately per season — neither is the default.
+
+| | HINGE-2D | HINGE-3D |
+|---|---|---|
+| **Block length** | 2 days | 3 days |
+| **Active week** | Mon–Sat | Mon–Sat |
+| **Pattern** | 2 / 2 / 2 | 3 / 3 |
+| **Off-block length** | 4 days | 3 days |
+| **Max on-arc at seam** | 2 days | 3 days |
+| **Streak consistency** | Every streak exactly 2 days | Every streak exactly 3 days |
+| **Sunday** | Neutral — church and family | Neutral — church and family |
+| **Best for** | Steady rhythm, frequent handoff | Deeper focus, longer rest |
+| **Switching** | Change block size only — ISO anchor unchanged | Same |
+
+Switching between variants requires no reconfiguration. The ISO week number continues to determine who starts the week as Primary. Only the block length changes.
 
 ---
 
 ## The Pattern
 
-HINGE runs on a fortnightly cycle. Each week is either an **Odd week** or an **Even week**, determined by its ISO week number — the standard international week numbering system used by most calendars. Any calendar app can show ISO week numbers. This means the pattern is not just memorizable — it is independently verifiable by anyone, on any device, forever.
+Both variants run on a fortnightly cycle anchored to the ISO week number — the standard international week numbering system used by most calendars. Any calendar app can show ISO week numbers.
 
 **Odd ISO week = Week A. Even ISO week = Week B.**
 
 The current week number is always enough to know whose day it is.
 
-### Week A — Odd ISO Week
+### HINGE-2D — Week A (Odd ISO Week)
 
-| | Mon | Tue | Wed | Thu | Fri | Sat* | Sun |
+| | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
-| **Primary** | Parent 2 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 1 | — |
-| **Available** | Parent 1 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 2 | Both |
+| **Primary** | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | — |
+| **Available** | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Both |
 
-### Week B — Even ISO Week
+### HINGE-2D — Week B (Even ISO Week)
 
-| | Mon | Tue | Wed | Thu | Fri | Sat* | Sun |
+| | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
+|---|---|---|---|---|---|---|---|
+| **Primary** | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | — |
+| **Available** | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Both |
+
+*Parent 1's blocks: Mon–Tue and Fri–Sat (Week A), Wed–Thu (Week B). Every block exactly 2 days.*
+
+---
+
+### HINGE-3D — Week A (Odd ISO Week)
+
+| | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
 | **Primary** | Parent 1 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 2 | — |
 | **Available** | Parent 2 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 1 | Both |
 
-Wednesday is the hinge. It always belongs to whoever owns Monday and Tuesday that week.
+### HINGE-3D — Week B (Even ISO Week)
 
-*Saturday Primary follows from Friday — whoever owned Friday carries into Saturday.
+| | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
+|---|---|---|---|---|---|---|---|
+| **Primary** | Parent 2 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 1 | — |
+| **Available** | Parent 1 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 2 | Both |
 
-### Saturday
-
-Saturday belongs to whoever owned Friday. The day unfolds at its own pace — no structured handoff, no morning obligation. Primary is simply on point when the day calls for it.
-
-### Sunday
-
-Sunday is church and family. No Primary is designated. If a categorical lands on Sunday — a birthday party, an outing — the Saturday afternoon owner handles it, which creates an unplanned free window for the other parent.
+*Parent 1's blocks: Mon–Wed (Week A), Thu–Sat (Week B). Every block exactly 3 days.*
 
 ---
 
@@ -78,24 +106,11 @@ Sunday is church and family. No Primary is designated. If a categorical lands on
 To know who is Primary on any future day:
 
 1. Look up the ISO week number for that week.
-2. Odd = Week A (Parent 2 owns Mon–Wed, Parent 1 owns Thu–Fri). Even = Week B (Parent 1 owns Mon–Wed, Parent 2 owns Thu–Fri).
-3. Done.
+2. Odd = Week A. Even = Week B.
+3. Apply the active variant's block pattern.
+4. Done.
 
-No chart required after the first read. Most calendar apps display ISO week numbers natively. A quick check of the week number is the entire lookup.
-
-### By the Numbers — Full School Year
-
-Over a standard school year (approximately 40 weeks, September through June):
-
-| Metric | Parent 2 | Parent 1 |
-|---|---|---|
-| Primary weekdays | 102 | 102 |
-| Saturday afternoons | ~20 | ~20 |
-| 3-day primary weeks | ~20 | ~20 |
-| 2-day primary weeks | ~20 | ~20 |
-| Total primary days (weekdays + Sat PM) | ~122 | ~122 |
-
-Equity is not approximate — it is exact, because the fortnightly structure distributes load symmetrically across every two-week period without exception.
+No chart required after the first read. Most calendar apps display ISO week numbers natively.
 
 ---
 
@@ -112,8 +127,6 @@ The default answer to a swap request is *yes, of course.* HINGE is a generous sy
 - No rebalancing conversation. No tracking. No obligation to immediately reciprocate.
 - If a return swap makes sense naturally, great. If not, the system rebalances itself over time.
 
-A swap does not need to be symmetric. Trading a 3-day week for a 2-day week is fine. Trading a Wednesday for a Friday is fine. The fortnightly equity holds across the cycle regardless of individual swaps — and even if it didn't, the system is built on mutual investment, not ledger balance.
-
 The one discipline worth keeping: communicate early. A swap requested the morning of is harder to absorb than one requested a few days out. Early notice is a courtesy, not a rule.
 
 ---
@@ -126,18 +139,20 @@ A categorical is any recurring exception type. HINGE handles categoricals by rul
 |---|---|---|
 | School holiday | No school — kids home all day | Primary parent's day is fuller; pattern unchanged |
 | Half day / early dismissal | Earlier pickup required | Primary parent adjusts pickup; pattern unchanged |
-| Child sick day | Child stays home from school | Whoever is Primary that day owns it; rotates normally next time |
+| Child sick day | Child stays home from school | Whoever is Primary that day owns it; rotates normally |
 | Parent unavailable | Sick, traveling, otherwise out | Other parent absorbs the day. No tracking. Grace. |
 | Multi-day travel | One parent away 2+ days | Other parent covers all days affected; coverage rule applies |
 | School event, one parent | Concert, conference, etc. | Primary parent attends naturally; rotates across the cycle |
 | School event, both parents | Both expected to attend | Both show up. Primary suspended for that event. |
-| Saturday categorical | Birthday party, playdate, etc. | Friday owner handles it — they are already Primary |
-| Sunday categorical | Birthday party, outing, etc. | Saturday afternoon owner handles it; other parent gets the free window |
+| Saturday categorical | Birthday party, playdate, etc. | Whoever is Primary that day handles it |
+| Sunday categorical | Birthday party, outing, etc. | Saturday Primary handles it; other parent gets the free window |
 
 ---
 
 ## Summer
 
 HINGE does not have a summer mode. The rotation continues on the same Odd/Even cadence through summer. The difference is texture, not structure: without school anchoring the day, Primary means ambient presence and responsiveness rather than logistics ownership. The blocks hold. The free days hold. The equity holds.
+
+Summer is also a natural inflection point for switching variants — 2D during the looser summer rhythm, 3D when school structures the day and deeper focus blocks become more valuable.
 
 ---
