@@ -109,9 +109,7 @@ END:VCALENDAR
 
 | Condition | Expected value |
 |---|---|
-| `me=1`, `p1=Alice` | `ORBIT — Alice` |
-| `me=2`, `p2=Bob` | `ORBIT — Bob` |
-| `me` not supplied | `ORBIT` (or omit the property — either is acceptable) |
+| `p1=Alice`, `p2=Bob`, any `me` value or `me` omitted | `ORBIT (Alice | Bob)` |
 
 ### 2.5 Window coverage
 

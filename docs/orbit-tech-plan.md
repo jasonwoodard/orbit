@@ -89,7 +89,7 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//ORBIT Approach//Calendar Feed//EN
 CALSCALE:GREGORIAN
-X-WR-CALNAME:ORBIT — Alice
+X-WR-CALNAME:ORBIT (Alice | Bob)
 X-WR-CALDESC:The ORBIT Approach rotation schedule
 REFRESH-INTERVAL;VALUE=DURATION:PT12H
 BEGIN:VEVENT
@@ -104,7 +104,7 @@ END:VCALENDAR
 ```
 
 Notes:
-- `X-WR-CALNAME` includes the subscriber's name (e.g. `ORBIT — Alice`) when `me` is supplied
+- `X-WR-CALNAME` is always `ORBIT ({p1} | {p2})` (e.g. `ORBIT (Alice | Bob)`), regardless of whether `me` is supplied
 - `REFRESH-INTERVAL` set to 12 hours — fast enough to catch same-day corrections
 - `UID` is deterministic (`orbit-{date}@{domain}`) — ensures GCal deduplicates correctly on refresh rather than creating duplicate events
 - `SUMMARY` uses the subscriber's resolved name (e.g. `Primary : Alice` or `Primary : Bob`)
