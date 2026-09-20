@@ -1,11 +1,8 @@
 # ORBIT Calendar Feed — Product Requirements Document
 
 **Product:** ORBIT Approach iCalendar Feed
-
 **Version:** 1.0
-
 **Status:** Draft
-
 **Companion document:** orbit-tech-plan.md
 
 ---
@@ -69,11 +66,11 @@ After one month of running ORBIT, the friction point is schedule legibility. The
 ### Event title format
 
 ```
-Primary : Parent1Name
+Primary : Alice
 ```
 or
 ```
-Primary : Parent2Name
+Primary : Bob
 ```
 
 Simple, unambiguous, consistent. No abbreviation.
@@ -94,14 +91,14 @@ This means scheduling tools correctly reflect that the Primary parent is unavail
 
 | Parameter | Required | Default | Values | Notes |
 |---|---|---|---|---|
-| `p1` | Yes | — | Any string | Name of Parent 1 (owns odd ISO weeks) |
-| `p2` | Yes | — | Any string | Name of Parent 2 (owns even ISO weeks) |
+| `p1` | Yes | — | Any string | Name of the first parent (owns odd ISO weeks, e.g. `Alice`) |
+| `p2` | Yes | — | Any string | Name of the second parent (owns even ISO weeks, e.g. `Bob`) |
 | `me` | No | — | `1` or `2` | Which parent is subscribing; enables busy/free |
 | `variant` | No | `2D` | `2D` or `3D` | Block length variant |
 
 ### Rotation logic
 
-**Anchor:** Parent 1 (`p1`) owns **odd ISO weeks**. Parent 2 (`p2`) owns **even ISO weeks**. This is fixed — no configurable anchor needed.
+**Anchor:** `p1` (e.g. Alice) owns **odd ISO weeks**. `p2` (e.g. Bob) owns **even ISO weeks**. This is fixed — no configurable anchor needed.
 
 **ORBIT-2D block assignment** (within each week, Mon–Sat):
 
@@ -128,17 +125,17 @@ This means scheduling tools correctly reflect that the Primary parent is unavail
 ### URL examples
 
 ```
-# Parent 1 subscribing, 2D variant (default)
-https://orbit.example.com/orbitcal.ics?p1=Parent1&p2=Parent2&me=1
+# Alice subscribing, 2D variant (default)
+https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1
 
-# Parent 2 subscribing, 2D variant
-https://orbit.example.com/orbitcal.ics?p1=Parent1&p2=Parent2&me=2
+# Bob subscribing, 2D variant
+https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=2
 
 # Shared/display feed, no busy/free
-https://orbit.example.com/orbitcal.ics?p1=Parent1&p2=Parent2
+https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob
 
 # 3D variant
-https://orbit.example.com/orbitcal.ics?p1=Parent1&p2=Parent2&me=1&variant=3D
+https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&variant=3D
 ```
 
 ---
