@@ -69,17 +69,17 @@ The current week number is always enough to know whose day it is.
 
 | | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
-| **Primary** | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | — |
-| **Available** | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Both |
+| **Primary** | Alice | Alice | Bob | Bob | Alice | Alice | — |
+| **Available** | Bob | Bob | Alice | Alice | Bob | Bob | Both |
 
 ### ORBIT-2D — Week B (Even ISO Week)
 
 | | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
-| **Primary** | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | — |
-| **Available** | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Both |
+| **Primary** | Bob | Bob | Alice | Alice | Bob | Bob | — |
+| **Available** | Alice | Alice | Bob | Bob | Alice | Alice | Both |
 
-*Parent 1's blocks: Mon–Tue and Fri–Sat (Week A), Wed–Thu (Week B). Every block exactly 2 days.*
+*Alice's blocks: Mon–Tue and Fri–Sat (Week A), Wed–Thu (Week B). Every block exactly 2 days.*
 
 ---
 
@@ -87,17 +87,17 @@ The current week number is always enough to know whose day it is.
 
 | | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
-| **Primary** | Parent 1 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 2 | — |
-| **Available** | Parent 2 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 1 | Both |
+| **Primary** | Alice | Alice | Alice | Bob | Bob | Bob | — |
+| **Available** | Bob | Bob | Bob | Alice | Alice | Alice | Both |
 
 ### ORBIT-3D — Week B (Even ISO Week)
 
 | | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|---|
-| **Primary** | Parent 2 | Parent 2 | Parent 2 | Parent 1 | Parent 1 | Parent 1 | — |
-| **Available** | Parent 1 | Parent 1 | Parent 1 | Parent 2 | Parent 2 | Parent 2 | Both |
+| **Primary** | Bob | Bob | Bob | Alice | Alice | Alice | — |
+| **Available** | Alice | Alice | Alice | Bob | Bob | Bob | Both |
 
-*Parent 1's blocks: Mon–Wed (Week A), Thu–Sat (Week B). Every block exactly 3 days.*
+*Alice's blocks: Mon–Wed (Week A), Thu–Sat (Week B). Every block exactly 3 days.*
 
 ---
 
