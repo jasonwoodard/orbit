@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORBIT Calendar Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1E2D40;
+    --amber: #E8933A;
+    --amber-light: #FDEBD0;
+    --off-white: #F8F7F4;
+    --gray-line: #E0DDD8;
+    --gray-text: #6B7280;
+    --green: #3D7A5A;
+    --green-light: #E8F4EC;
+    --text: #1E2D40;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--off-white);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 1rem 4rem;
+  }
+
+  /* HEADER */
+  .header {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 2.5rem 0 1.5rem;
+    border-bottom: 2px solid var(--navy);
+    margin-bottom: 2rem;
+  }
+
+  .orbit-wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .orbit-expansion {
+    font-size: 0.7rem;
+    color: var(--gray-text);
+    letter-spacing: 0.04em;
+    margin-top: 3px;
+    text-transform: none;
+  }
+
+  .header-intro {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--navy);
+    max-width: 480px;
+  }
+
+  /* STEPS */
+  .steps {
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .step {
+    background: white;
+    border: 1.5px solid var(--gray-line);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .step.active { border-color: var(--navy); }
+  .step.complete { border-color: var(--green); }
+  .step.locked { opacity: 0.45; pointer-events: none; }
+
+  .step-header {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .step-number {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step.complete .step-number {
+    background: var(--green);
+  }
+
+  .step-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--navy);
+    flex: 1;
+  }
+
+  .step-summary {
+    font-size: 0.8rem;
+    color: var(--gray-text);
+    margin-left: auto;
+  }
+
+  .step-body {
+    padding: 0 1.25rem 1.25rem;
+    display: none;
+  }
+
+  .step.active .step-body { display: block; }
+
+  .step-question {
+    font-size: 0.8rem;
+    color: var(--gray-text);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  /* INPUTS */
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .input-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: 0.02em;
+  }
+
+  input[type="text"] {
+    border: 1.5px solid var(--gray-line);
+    border-radius: 5px;
+    padding: 0.5rem 0.65rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: var(--navy);
+    background: var(--off-white);
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--navy);
+    background: white;
+  }
+
+  /* CHOICE BUTTONS */
+  .choices {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .choice {
+    border: 1.5px solid var(--gray-line);
+    border-radius: 6px;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: white;
+    color: var(--navy);
+    transition: all 0.15s;
+    line-height: 1.3;
+  }
+
+  .choice:hover { border-color: var(--navy); }
+
+  .choice.selected {
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+  }
+
+  .choice-sub {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 400;
+    opacity: 0.75;
+    margin-top: 1px;
+  }
+
+  /* WHO AM I — visual week display */
+  .week-visual {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+    margin: 0.75rem 0;
+  }
+
+  .wv-day {
+    border-radius: 3px;
+    padding: 5px 2px;
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .wv-p1 { background: var(--amber-light); color: #7A4010; }
+  .wv-p2 { background: #DEEEF8; color: #0C4472; }
+
+  .week-label {
+    font-size: 0.65rem;
+    color: var(--gray-text);
+    margin-bottom: 3px;
+  }
+
+  /* CONTINUE BUTTON */
+  .btn-continue {
+    margin-top: 1rem;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-continue:hover { opacity: 0.85; }
+  .btn-continue:disabled { opacity: 0.35; cursor: default; }
+
+  /* URL OUTPUT */
+  .url-block {
+    background: var(--navy);
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+    margin-top: 1rem;
+  }
+
+  .url-label {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .url-text {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: var(--amber);
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
+  .btn-copy {
+    margin-top: 0.75rem;
+    background: var(--amber);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.775rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .btn-copy:hover { opacity: 0.88; }
+  .btn-copy.copied { background: var(--green); }
+
+  /* GCAL INSTRUCTIONS */
+  .gcal-steps {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .gcal-step {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .gcal-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--amber-light);
+    color: var(--amber);
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .gcal-text {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--navy);
+  }
+
+  .gcal-text code {
+    background: var(--off-white);
+    border: 1px solid var(--gray-line);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 0.75rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* DONE STATE */
+  .done-banner {
+    background: var(--green-light);
+    border: 1.5px solid var(--green);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    display: none;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .done-banner.visible { display: block; }
+
+  .done-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: var(--green);
+    margin-bottom: 0.3rem;
+  }
+
+  .done-text {
+    font-size: 0.8rem;
+    color: var(--navy);
+    line-height: 1.5;
+  }
+
+  .edit-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--gray-text);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* BUTTON ROW (Back + Continue side by side) */
+  .btn-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .btn-back {
+    background: transparent;
+    color: var(--gray-text);
+    border: 1.5px solid var(--gray-line);
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.825rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .btn-back:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="orbit-wordmark">ORBIT</div>
+  <div class="orbit-expansion">Our Rotation, Both In Turn — Calendar Setup</div>
+  <p class="header-intro">
+    This guide builds a personal calendar feed URL for your ORBIT rotation. Add it to Google Calendar once and your schedule appears automatically — no manual entry, updates forever.
+  </p>
+</div>
+
+<div class="steps" id="steps">
+
+  <!-- STEP 1: Names -->
+  <div class="step active" id="step1">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div class="step-title">Your names</div>
+      <div class="step-summary" id="s1-summary"></div>
+    </div>
+    <div class="step-body">
+      <p class="step-question">Enter your first names — these appear on each calendar event.</p>
+      <div class="input-row">
+        <div class="input-group">
+          <div class="input-label">Your name</div>
+          <input type="text" id="myName" placeholder="e.g. Alice" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <div class="input-label">Partner's name</div>
+          <input type="text" id="partnerName" placeholder="e.g. Bob" autocomplete="off">
+        </div>
+      </div>
+      <button class="btn-continue" id="btn1" onclick="completeStep1()" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Who am I -->
+  <div class="step locked" id="step2">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div class="step-title">Your weeks</div>
+      <div class="step-summary" id="s2-summary"></div>
+    </div>
+    <div class="step-body">
+      <p class="step-question">ORBIT alternates on a two-week cycle. Which week type do you start on?</p>
+
+      <div id="week-visual-container"></div>
+
+      <div class="choices" id="whoami-choices">
+        <div class="choice" onclick="selectWhoAmI(1)">
+          <span id="odd-label">Odd weeks</span>
+          <span class="choice-sub">Weeks 1, 3, 5 … of the year</span>
+        </div>
+        <div class="choice" onclick="selectWhoAmI(2)">
+          <span id="even-label">Even weeks</span>
+          <span class="choice-sub">Weeks 2, 4, 6 … of the year</span>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="goBack(1)">← Back</button>
+        <button class="btn-continue" id="btn2" onclick="completeStep2()" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Options -->
+  <div class="step locked" id="step3">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div class="step-title">Options</div>
+      <div class="step-summary" id="s3-summary"></div>
+    </div>
+    <div class="step-body">
+      <p class="step-question" style="margin-bottom:0.9rem;">A couple of smart defaults — change only if you need to.</p>
+
+      <div class="input-group" style="margin-bottom:0.9rem;">
+        <div class="input-label" style="margin-bottom:0.4rem;">Block length variant</div>
+        <div class="choices">
+          <div class="choice selected" id="v2d" onclick="selectVariant('2D')">
+            2D — Two-day blocks
+            <span class="choice-sub">Mon–Tue / Wed–Thu / Fri–Sat each fortnight</span>
+          </div>
+          <div class="choice" id="v3d" onclick="selectVariant('3D')">
+            3D — Three-day blocks
+            <span class="choice-sub">Mon–Wed / Thu–Sat each fortnight</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="input-label" style="margin-bottom:0.4rem;">Busy / free in scheduling tools</div>
+        <div class="choices">
+          <div class="choice selected" id="bf-yes" onclick="selectBusyFree(true)">
+            Mark my days as busy
+            <span class="choice-sub">Scheduling tools see you unavailable when Primary</span>
+          </div>
+          <div class="choice" id="bf-no" onclick="selectBusyFree(false)">
+            Display only
+            <span class="choice-sub">Events show on calendar but never block scheduling</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-back" onclick="goBack(2)">← Back</button>
+        <button class="btn-continue" id="btn3" onclick="completeStep3()">Build my URL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Your URL + GCal setup -->
+  <div class="step locked" id="step4">
+    <div class="step-header">
+      <div class="step-number">4</div>
+      <div class="step-title">Add to Google Calendar</div>
+    </div>
+    <div class="step-body">
+
+      <div class="url-block">
+        <div class="url-label">Your ORBIT calendar URL</div>
+        <div class="url-text" id="generated-url"></div>
+        <button class="btn-copy" id="copy-btn" onclick="copyURL()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy URL
+        </button>
+      </div>
+
+      <div class="gcal-steps" style="margin-top:1.25rem;">
+        <p class="step-question" style="margin-bottom:0.25rem;">Add this feed to Google Calendar:</p>
+        <div class="gcal-step">
+          <div class="gcal-num">1</div>
+          <div class="gcal-text">Open Google Calendar on a desktop browser. In the left sidebar, find <strong>Other calendars</strong> and click the <code>+</code> button beside it.</div>
+        </div>
+        <div class="gcal-step">
+          <div class="gcal-num">2</div>
+          <div class="gcal-text">Select <strong>From URL</strong> from the menu that appears.</div>
+        </div>
+        <div class="gcal-step">
+          <div class="gcal-num">3</div>
+          <div class="gcal-text">Paste your ORBIT calendar URL into the field and click <strong>Add calendar</strong>. Google Calendar will import it immediately.</div>
+        </div>
+        <div class="gcal-step">
+          <div class="gcal-num">4</div>
+          <div class="gcal-text">Find the new calendar in your sidebar — it's usually called <strong>ORBIT</strong>. Click the three-dot menu beside it to set a color that distinguishes it from your other calendars.</div>
+        </div>
+        <div class="gcal-step">
+          <div class="gcal-num">5</div>
+          <div class="gcal-text">Done. The feed refreshes automatically. Your partner uses the same URL but with their own settings — send them to this page to build theirs.</div>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:1.25rem;">
+        <button class="btn-back" onclick="goBack(3)">← Back to options</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="done-banner" id="done-banner" style="margin-top:1.25rem;">
+  <div class="done-title">You're set up.</div>
+  <div class="done-text">Your ORBIT rotation will appear in Google Calendar within a few minutes of subscribing. Events update automatically — no maintenance needed.</div>
+  <span class="edit-link" onclick="resetAll()">Start over with different settings</span>
+</div>
+
+<script>
+  const BASE_URL = 'https://orbit.jasonwoodard.com/orbitcal.ics';
+
+  let state = {
+    myName: '',
+    partnerName: '',
+    me: null,       // 1 or 2
+    variant: '2D',
+    busyFree: true,
+  };
+
+  // ── Step 1: Names ──────────────────────────────────────────────
+  const myNameInput = document.getElementById('myName');
+  const partnerNameInput = document.getElementById('partnerName');
+  const btn1 = document.getElementById('btn1');
+
+  function checkNames() {
+    btn1.disabled = !(myNameInput.value.trim() && partnerNameInput.value.trim());
+    updateWeekVisual();
+  }
+
+  myNameInput.addEventListener('input', checkNames);
+  partnerNameInput.addEventListener('input', checkNames);
+
+  function completeStep1() {
+    state.myName = myNameInput.value.trim();
+    state.partnerName = partnerNameInput.value.trim();
+    document.getElementById('s1-summary').textContent = `${state.myName} & ${state.partnerName}`;
+    markComplete('step1');
+    unlock('step2');
+    updateWeekVisual();
+  }
+
+  // ── Step 2: Who am I ───────────────────────────────────────────
+  function updateWeekVisual() {
+    const me = state.myName || 'You';
+    const partner = state.partnerName || 'Partner';
+    const container = document.getElementById('week-visual-container');
+
+    // Update choice labels
+    document.getElementById('odd-label').textContent = `${me} owns odd weeks`;
+    document.getElementById('even-label').textContent = `${me} owns even weeks`;
+
+    // 2D visual for both week types
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+    // Week A (odd): p1 = Mon-Tue, Fri-Sat; p2 = Wed-Thu
+    const weekA2D = [1,1,2,2,1,1];
+    // Week B (even): p2 = Mon-Tue, Fri-Sat; p1 = Wed-Thu
+    const weekB2D = [2,2,1,1,2,2];
+
+    function renderWeek(pattern, label, whoIsP1) {
+      const p1name = whoIsP1 === 1 ? me : partner;
+      const p2name = whoIsP1 === 1 ? partner : me;
+      let html = `<div class="week-label">${label}</div><div class="week-visual">`;
+      days.forEach((d, i) => {
+        const isMe = (pattern[i] === whoIsP1);
+        const cls = isMe ? 'wv-p1' : 'wv-p2';
+        const name = pattern[i] === 1 ? p1name : p2name;
+        html += `<div class="wv-day ${cls}">${d}<br>${name}</div>`;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    const sel = state.me || 1;
+    container.innerHTML =
+      renderWeek(weekA2D, 'Odd week (e.g. week 37)', sel) +
+      renderWeek(weekB2D, 'Even week (e.g. week 38)', sel);
+  }
+
+  function selectWhoAmI(val) {
+    state.me = val;
+    document.querySelectorAll('#whoami-choices .choice').forEach((el, i) => {
+      el.classList.toggle('selected', i + 1 === val);
+    });
+    document.getElementById('btn2').disabled = false;
+    updateWeekVisual();
+  }
+
+  function completeStep2() {
+    const label = state.me === 1 ? 'Odd weeks' : 'Even weeks';
+    document.getElementById('s2-summary').textContent = label;
+    markComplete('step2');
+    unlock('step3');
+  }
+
+  // ── Step 3: Options ────────────────────────────────────────────
+  function selectVariant(v) {
+    state.variant = v;
+    document.getElementById('v2d').classList.toggle('selected', v === '2D');
+    document.getElementById('v3d').classList.toggle('selected', v === '3D');
+    const summary = v === '2D'
+      ? '2D, ' + (state.busyFree ? 'busy' : 'display')
+      : '3D, ' + (state.busyFree ? 'busy' : 'display');
+    document.getElementById('s3-summary').textContent = summary;
+  }
+
+  function selectBusyFree(val) {
+    state.busyFree = val;
+    document.getElementById('bf-yes').classList.toggle('selected', val);
+    document.getElementById('bf-no').classList.toggle('selected', !val);
+  }
+
+  function completeStep3() {
+    const summary = `${state.variant}, ${state.busyFree ? 'busy' : 'display only'}`;
+    document.getElementById('s3-summary').textContent = summary;
+    markComplete('step3');
+    unlock('step4');
+    buildURL();
+    document.getElementById('done-banner').classList.add('visible');
+  }
+
+  // ── URL builder ────────────────────────────────────────────────
+  function buildURL() {
+    // p1 = me (odd weeks), p2 = partner (even weeks)
+    const p1 = state.me === 1 ? state.myName : state.partnerName;
+    const p2 = state.me === 1 ? state.partnerName : state.myName;
+    const meParam = state.me; // always 1 or 2 relative to p1/p2
+
+    const params = new URLSearchParams();
+    params.set('p1', p1);
+    params.set('p2', p2);
+    params.set('me', meParam);
+    if (state.variant !== '2D') params.set('variant', state.variant);
+
+    const url = `${BASE_URL}?${params.toString()}`;
+    document.getElementById('generated-url').textContent = url;
+    return url;
+  }
+
+  // ── Copy ───────────────────────────────────────────────────────
+  function copyURL() {
+    const url = document.getElementById('generated-url').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy URL';
+        btn.classList.remove('copied');
+      }, 2500);
+    });
+  }
+
+  // ── Step state management ──────────────────────────────────────
+  function markComplete(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('active');
+    el.classList.add('complete');
+    el.querySelector('.step-number').textContent = '✓';
+  }
+
+  function unlock(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('locked');
+    el.classList.add('active');
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ── Back navigation ────────────────────────────────────────────
+  function goBack(toStep) {
+    // Determine which step is currently active/complete and lock it
+    const fromStep = toStep + 1;
+    const fromEl = document.getElementById('step' + fromStep);
+    fromEl.classList.remove('active', 'complete');
+    fromEl.classList.add('locked');
+    fromEl.querySelector('.step-number').textContent = String(fromStep);
+
+    // Also hide done-banner and lock step4 if backing from step4
+    if (fromStep === 4) {
+      document.getElementById('done-banner').classList.remove('visible');
+    }
+
+    // Re-activate the target step
+    const toEl = document.getElementById('step' + toStep);
+    toEl.classList.remove('complete', 'locked');
+    toEl.classList.add('active');
+    toEl.querySelector('.step-number').textContent = String(toStep);
+
+    // Restore visual selection state in the revealed step
+    if (toStep === 1) {
+      // Inputs retain their typed values; nothing to restore
+    } else if (toStep === 2) {
+      // Restore whoami selection from state.me
+      document.querySelectorAll('#whoami-choices .choice').forEach((el, i) => {
+        el.classList.toggle('selected', state.me !== null && i + 1 === state.me);
+      });
+      document.getElementById('btn2').disabled = (state.me === null);
+      updateWeekVisual();
+    } else if (toStep === 3) {
+      // Restore variant + busyFree from state
+      document.getElementById('v2d').classList.toggle('selected', state.variant === '2D');
+      document.getElementById('v3d').classList.toggle('selected', state.variant === '3D');
+      document.getElementById('bf-yes').classList.toggle('selected', state.busyFree === true);
+      document.getElementById('bf-no').classList.toggle('selected', state.busyFree === false);
+    }
+
+    toEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetAll() {
+    location.reload();
+  }
+</script>
+</body>
+</html>
