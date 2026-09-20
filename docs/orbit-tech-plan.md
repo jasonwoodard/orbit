@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Status:** Draft  
-**Companion document:** ORBIT-calendar-feed-PRD.md
+**Companion document:** orbit-calendar-feed-prd.md
 
 ---
 
