@@ -12,6 +12,7 @@ A fortnightly family scheduling system and its calendar integration.
 | `docs/ORBIT-calendar-feed-PRD.md` | Product requirements for the ICS feed |
 | `docs/orbit-tech-plan.md` | Hosting decisions, repo structure, build sequence, technical spec |
 | `docs/orbit-test-plan.md` | Test cases for rotation logic, ICS output, and parameter handling |
+| `docs/orbit-ics-function.md` | Function reference — endpoint, parameters, response format, examples |
 | `docs/orbit-cal-user-guide.html` | Interactive setup guide (served via GitHub Pages) |
 | `docs/ORBIT-infographic.html` | Print-ready 8.5×11 rotation cheat sheet |
 | `functions/orbit-ics/` | Cloud Function — the ICS feed endpoint |
