@@ -55,7 +55,9 @@ Each `VEVENT`:
 | `TRANSP` | `OPAQUE` if that day's Primary matches `me`, otherwise `TRANSPARENT` |
 | `UID` | `orbit-{YYYYMMDD}@orbit.jasonwoodard.com` — deterministic, so re-subscribing or refreshing never creates duplicates |
 
-Calendar-level properties: `X-WR-CALNAME` is set to `ORBIT — {subscriber name}` when `me` is supplied (omitted otherwise), and `REFRESH-INTERVAL;VALUE=DURATION:PT12H` tells clients how often to poll.
+Calendar-level properties: `X-WR-CALNAME` is always set to `ORBIT ({p1} | {p2})`, regardless of whether `me` is supplied, and `REFRESH-INTERVAL;VALUE=DURATION:PT12H` tells clients how often to poll.
+
+Note: Google Calendar's "Subscribe from URL" often ignores `X-WR-CALNAME` on the initial add and shows the raw URL as the calendar name instead — you may need to rename it manually in Calendar settings after subscribing.
 
 ## Example requests
 
@@ -76,7 +78,7 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//ORBIT Approach//Calendar Feed//EN
 CALSCALE:GREGORIAN
-X-WR-CALNAME:ORBIT — Alice
+X-WR-CALNAME:ORBIT (Alice | Bob)
 X-WR-CALDESC:The ORBIT Approach rotation schedule
 REFRESH-INTERVAL;VALUE=DURATION:PT12H
 BEGIN:VEVENT

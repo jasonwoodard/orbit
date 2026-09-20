@@ -83,14 +83,12 @@ describe('buildIcs — §2.3 TRANSP / busy-free behavior', () => {
 });
 
 describe('buildIcs — §2.4 X-WR-CALNAME', () => {
-  it('includes subscriber name when me is supplied', () => {
-    const ics = buildIcs({ p1: 'Alice', p2: 'Bob', me: 1, variant: '2D', now: NOW });
-    expect(ics).toContain('X-WR-CALNAME:ORBIT — Alice');
-  });
+  it('names the calendar after both parents, regardless of me', () => {
+    const withMe = buildIcs({ p1: 'Alice', p2: 'Bob', me: 1, variant: '2D', now: NOW });
+    expect(withMe).toContain('X-WR-CALNAME:ORBIT (Alice | Bob)');
 
-  it('omits X-WR-CALNAME when me is not supplied', () => {
-    const ics = buildIcs({ p1: 'Alice', p2: 'Bob', variant: '2D', now: NOW });
-    expect(ics).not.toContain('X-WR-CALNAME');
+    const withoutMe = buildIcs({ p1: 'Alice', p2: 'Bob', variant: '2D', now: NOW });
+    expect(withoutMe).toContain('X-WR-CALNAME:ORBIT (Alice | Bob)');
   });
 });
 

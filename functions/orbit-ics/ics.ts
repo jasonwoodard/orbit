@@ -66,10 +66,7 @@ export function buildIcs(options: IcsOptions): string {
     'CALSCALE:GREGORIAN',
   ];
 
-  if (me === 1 || me === 2) {
-    const subscriberName = me === 1 ? p1 : p2;
-    lines.push(`X-WR-CALNAME:${escapeText(`ORBIT — ${subscriberName}`)}`);
-  }
+  lines.push(`X-WR-CALNAME:${escapeText(`ORBIT (${p1} | ${p2})`)}`);
   lines.push(`X-WR-CALDESC:${escapeText('The ORBIT Approach rotation schedule')}`);
   lines.push('REFRESH-INTERVAL;VALUE=DURATION:PT12H');
 
