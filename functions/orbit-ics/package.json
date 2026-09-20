@@ -1,0 +1,24 @@
+{
+  "name": "orbit-ics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ORBIT Approach iCalendar feed — Cloud Functions gen2 HTTP endpoint",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "gcp-build": "tsc",
+    "start": "npm run build && functions-framework --target=orbitIcs --source=dist",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
