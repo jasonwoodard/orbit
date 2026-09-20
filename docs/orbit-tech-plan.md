@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Status:** Draft  
-**Companion document:** orbit-calendar-feed-prd.md
+**Companion document:** ORBIT-calendar-feed-PRD.md
 
 ---
 
@@ -89,13 +89,13 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//ORBIT Approach//Calendar Feed//EN
 CALSCALE:GREGORIAN
-X-WR-CALNAME:ORBIT — Parent1Name
+X-WR-CALNAME:ORBIT — Alice
 X-WR-CALDESC:The ORBIT Approach rotation schedule
 REFRESH-INTERVAL;VALUE=DURATION:PT12H
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:20260901
 DTEND;VALUE=DATE:20260902
-SUMMARY:Primary : Parent1Name
+SUMMARY:Primary : Alice
 TRANSP:OPAQUE
 UID:orbit-20260901@orbit.example.com
 END:VEVENT
@@ -104,9 +104,10 @@ END:VCALENDAR
 ```
 
 Notes:
-- `X-WR-CALNAME` includes the subscriber's name when `me` is supplied
+- `X-WR-CALNAME` includes the subscriber's name (e.g. `ORBIT — Alice`) when `me` is supplied
 - `REFRESH-INTERVAL` set to 12 hours — fast enough to catch same-day corrections
 - `UID` is deterministic (`orbit-{date}@{domain}`) — ensures GCal deduplicates correctly on refresh rather than creating duplicate events
+- `SUMMARY` uses the subscriber's resolved name (e.g. `Primary : Alice` or `Primary : Bob`)
 - `DTEND` is the following day (iCal all-day event convention)
 
 ### ISO week computation
