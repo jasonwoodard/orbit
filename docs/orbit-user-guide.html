@@ -130,7 +130,8 @@
   }
 
   input[type="text"],
-  input[type="time"] {
+  input[type="time"],
+  select {
     border: 1.5px solid var(--gray-line);
     border-radius: 5px;
     padding: 0.5rem 0.65rem;
@@ -143,7 +144,8 @@
   }
 
   input[type="text"]:focus,
-  input[type="time"]:focus {
+  input[type="time"]:focus,
+  select:focus {
     outline: none;
     border-color: var(--navy);
     background: white;
@@ -220,6 +222,16 @@
   }
 
   .hours-custom.visible { display: block; }
+
+  /* TIMEZONE SUB-PANEL */
+  .timezone-panel {
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--gray-line);
+    display: none;
+  }
+
+  .timezone-panel.visible { display: block; }
 
   .hours-warning {
     margin-top: 0.5rem;
@@ -478,6 +490,26 @@
         </div>
         <div class="hours-warning" id="hours-warning" style="display:none;">End time must be after start time — your link will use all-day events until this is fixed.</div>
       </div>
+      <div class="timezone-panel" id="timezone-panel">
+        <div class="input-group">
+          <div class="input-label">Timezone</div>
+          <select id="timezone">
+            <option value="America/New_York">Eastern Time (New York)</option>
+            <option value="America/Chicago">Central Time (Chicago)</option>
+            <option value="America/Denver">Mountain Time (Denver)</option>
+            <option value="America/Phoenix">Mountain Time, no DST (Phoenix)</option>
+            <option value="America/Los_Angeles">Pacific Time (Los Angeles)</option>
+            <option value="America/Anchorage">Alaska Time (Anchorage)</option>
+            <option value="Pacific/Honolulu">Hawaii Time (Honolulu)</option>
+            <option value="UTC">UTC</option>
+            <option value="Europe/London">UK Time (London)</option>
+            <option value="Europe/Paris">Central European Time (Paris)</option>
+            <option value="Europe/Berlin">Central European Time (Berlin)</option>
+            <option value="Asia/Tokyo">Japan Time (Tokyo)</option>
+            <option value="Australia/Sydney">Australian Eastern Time (Sydney)</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -538,6 +570,23 @@
   };
   const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat'];
 
+  // Friendlier labels for the bullet copy — keys must match the <select> options.
+  const ZONE_LABELS = {
+    'America/New_York': 'Eastern Time',
+    'America/Chicago': 'Central Time',
+    'America/Denver': 'Mountain Time',
+    'America/Phoenix': 'Mountain Time (no DST)',
+    'America/Los_Angeles': 'Pacific Time',
+    'America/Anchorage': 'Alaska Time',
+    'Pacific/Honolulu': 'Hawaii Time',
+    'UTC': 'UTC',
+    'Europe/London': 'UK Time',
+    'Europe/Paris': 'Central European Time',
+    'Europe/Berlin': 'Central European Time',
+    'Asia/Tokyo': 'Japan Time',
+    'Australia/Sydney': 'Australian Eastern Time',
+  };
+
   let state = {
     myName: '',
     partnerName: '',
@@ -545,6 +594,7 @@
     variant: '2D',
     busyFree: true,
     hoursMode: 'off', // 'off' | 'default' | 'custom'
+    timezone: 'America/New_York',
   };
 
   const el = (id) => document.getElementById(id);
@@ -623,17 +673,19 @@
     let hoursValid = true;
     let lastBulletIsWarning = false;
 
+    const zoneLabel = ZONE_LABELS[state.timezone] || state.timezone;
+
     if (!state.busyFree && state.hoursMode !== 'off') {
       bullets.push(`Since you chose Display only, there's no "your day" to time-block — all events stay all-day. Choose "Mark my days as busy" above to use a timed window.`);
       lastBulletIsWarning = true;
     } else if (state.hoursMode === 'off') {
       bullets.push('Events appear as an <strong>all-day</strong> banner.');
     } else if (state.hoursMode === 'default') {
-      bullets.push(`Your own Primary days are timed <strong>7:00 AM–8:00 PM</strong> — a real block in your day grid. ${partner}'s days stay all-day.`);
+      bullets.push(`Your own Primary days are timed <strong>7:00 AM–8:00 PM ${zoneLabel}</strong> — a real block in your day grid. ${partner}'s days stay all-day.`);
     } else {
       hoursValid = customRangeValid();
       if (hoursValid) {
-        bullets.push(`Your own Primary days are timed <strong>${formatTime(el('customStart').value)}–${formatTime(el('customEnd').value)}</strong> — a real block in your day grid. ${partner}'s days stay all-day.`);
+        bullets.push(`Your own Primary days are timed <strong>${formatTime(el('customStart').value)}–${formatTime(el('customEnd').value)} ${zoneLabel}</strong> — a real block in your day grid. ${partner}'s days stay all-day.`);
       } else {
         bullets.push('End time must be after start time — falling back to all-day for now.');
         lastBulletIsWarning = true;
@@ -641,6 +693,7 @@
     }
 
     el('hours-warning').style.display = (state.hoursMode === 'custom' && !hoursValid) ? 'block' : 'none';
+    el('timezone-panel').classList.toggle('visible', state.hoursMode !== 'off');
 
     el('preview-list').innerHTML = bullets.map((b, i) =>
       `<li${i === bullets.length - 1 && lastBulletIsWarning ? ' class="warning"' : ''}>${b}</li>`
@@ -680,8 +733,10 @@
 
     if (state.hoursMode === 'default') {
       params.set('hours', '1');
+      params.set('tz', state.timezone);
     } else if (state.hoursMode === 'custom' && hoursValid) {
       params.set('hours', `${el('customStart').value}-${el('customEnd').value}`);
+      params.set('tz', state.timezone);
     }
 
     const url = `${BASE_URL}?${params.toString()}`;
@@ -734,6 +789,8 @@
 
   el('customStart').addEventListener('input', render);
   el('customEnd').addEventListener('input', render);
+
+  el('timezone').addEventListener('change', (e) => { state.timezone = e.target.value; render(); });
 
   el('copy-btn').addEventListener('click', () => {
     const url = el('generated-url').textContent;

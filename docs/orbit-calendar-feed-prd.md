@@ -98,7 +98,19 @@ An all-day `OPAQUE` event correctly marks the whole day busy for free/busy looku
 | `hours` a valid `HHMM-HHMM` / `HH:MM-HH:MM` range | Timed, that exact window |
 | `hours` unparseable | Falls back to all-day |
 
-`hours` only ever reshapes a day where `TRANSP` is `OPAQUE` for this request — i.e., a day where the Primary matches `me`. The other parent's days, and every day when `me` is not supplied at all, always stay all-day regardless of `hours`: there's no personal conflict to visualize on a day that isn't yours, and no "yours" to speak of without `me`. Times are emitted as floating local time (no timezone conversion, no `TZID`) — each subscriber's calendar renders it in that calendar's own configured timezone.
+`hours` only ever reshapes a day where `TRANSP` is `OPAQUE` for this request — i.e., a day where the Primary matches `me`. The other parent's days, and every day when `me` is not supplied at all, always stay all-day regardless of `hours`: there's no personal conflict to visualize on a day that isn't yours, and no "yours" to speak of without `me`. By default the timed window is stamped as explicit UTC; the `tz` parameter (below) lets a subscriber pin it to their own zone instead.
+
+### `tz` parameter — timezone for the `hours` window
+
+A timed window has to be interpreted in *some* zone. Rather than guess, `tz` accepts an optional IANA timezone identifier (e.g. `America/New_York`) that qualifies the `hours` window explicitly:
+
+| `tz` value | Behavior |
+|---|---|
+| Absent | Window is stamped as explicit UTC |
+| Valid IANA zone | Window is qualified with that zone; the calendar client resolves DST automatically |
+| Invalid/unrecognized | Falls back to explicit UTC |
+
+`tz` has no effect without `hours`. This was chosen over a floating-time approach after live testing showed Google Calendar interprets floating (unzoned) times as UTC anyway — an explicit, named zone is the only way to get correct wall-clock display that survives DST transitions without ongoing maintenance. Because it's a "set once and forget it" setting, the user guide surfaces it as a dropdown of common zones rather than requiring subscribers to type an IANA identifier.
 
 ### Parameters
 
@@ -109,6 +121,7 @@ An all-day `OPAQUE` event correctly marks the whole day busy for free/busy looku
 | `me` | No | — | `1` or `2` | Which parent is subscribing; enables busy/free |
 | `variant` | No | `2D` | `2D` or `3D` | Block length variant |
 | `hours` | No | off | see above | Renders events as a timed window instead of all-day |
+| `tz` | No | — (UTC) | Any IANA timezone identifier | Qualifies the `hours` window with a named zone; no effect without `hours` |
 
 ### Rotation logic
 
@@ -156,6 +169,9 @@ https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&hours=1
 
 # Custom timed window
 https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&hours=0630-2145
+
+# Timed window in a named zone (resolves DST automatically)
+https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&hours=1&tz=America/New_York
 ```
 
 ---
@@ -179,7 +195,7 @@ https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&hours=0630-2145
 
 ## User Guide
 
-An interactive HTML setup guide (`orbit-user-guide.html`) accompanies the feed. It's a single settings panel (names, which week type you start on, variant, busy/free, hours) paired with a live "what you'll get" preview and generated URL that update as each setting changes, plus GCal subscription instructions.
+An interactive HTML setup guide (`orbit-user-guide.html`) accompanies the feed. It's a single settings panel (names, which week type you start on, variant, busy/free, hours, timezone) paired with a live "what you'll get" preview and generated URL that update as each setting changes, plus GCal subscription instructions.
 
 The guide is a self-contained static file. It requires no backend — URL construction is client-side JavaScript. It is hosted via GitHub Pages from the `docs/` directory of the repo.
 
