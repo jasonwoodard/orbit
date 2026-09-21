@@ -113,7 +113,7 @@ Notes:
 
 ### The `hours` parameter
 
-By default, events are all-day. The `hours` query parameter switches an event to a **floating local time** window instead (no `Z` suffix, no `TZID` — each subscriber's calendar renders it in whatever timezone that calendar is set to):
+By default, events are all-day. The `hours` query parameter switches the *subscriber's own* Primary days (the ones with `TRANSP:OPAQUE`) to a **floating local time** window instead (no `Z` suffix, no `TZID` — each subscriber's calendar renders it in whatever timezone that calendar is set to):
 
 | `hours` value | Resolves to |
 |---|---|
@@ -122,7 +122,7 @@ By default, events are all-day. The `hours` query parameter switches an event to
 | `HHMM-HHMM` / `HH:MM-HH:MM`, valid (start strictly before end) | on, that exact window |
 | anything else unparseable | falls back to off |
 
-`hours` only ever changes event shape; it never touches `TRANSP`, so it's fully independent of `me` — every combination of the two is meaningful (see `orbit-test-plan.md` for the full decision table).
+`hours` never touches `TRANSP` — that's still governed purely by `me`. But it only *applies* to a day where `TRANSP` is `OPAQUE`: the other parent's days, and every day when `me` isn't supplied at all, always stay all-day regardless of `hours` (see `orbit-test-plan.md` for the full decision table). Coupling it this way was a deliberate revision — an earlier version applied `hours` uniformly to every event for parameter orthogonality, but in real subscriber use a timed block on a day that isn't yours is just visual noise, not a conflict worth seeing.
 
 ### ISO week computation
 

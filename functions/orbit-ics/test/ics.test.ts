@@ -150,7 +150,7 @@ describe('buildIcs — text escaping / injection safety', () => {
   });
 });
 
-describe('buildIcs — hours window', () => {
+describe('buildIcs — hours window (applies only to the subscriber\'s own OPAQUE days)', () => {
   it('without hours, events stay all-day (VALUE=DATE)', () => {
     const ics = buildIcs({ p1: 'Alice', p2: 'Bob', variant: '2D', now: NOW });
     const [event] = parseEvents(ics);
@@ -158,7 +158,7 @@ describe('buildIcs — hours window', () => {
     expect(ics).toContain('DTSTART;VALUE=DATE:');
   });
 
-  it('with hours, events become floating local DATE-TIME for the given window', () => {
+  it('without me, hours has no target to apply to — everything stays all-day', () => {
     const ics = buildIcs({
       p1: 'Alice',
       p2: 'Bob',
@@ -166,16 +166,11 @@ describe('buildIcs — hours window', () => {
       now: NOW,
       hours: { startHour: 7, startMinute: 0, endHour: 20, endMinute: 0 },
     });
-    const [event] = parseEvents(ics);
-    expect(event.dtstart).toMatch(/^\d{8}T070000$/);
-    expect(event.dtend).toMatch(/^\d{8}T200000$/);
-    // Same calendar day, floating (no Z suffix, no TZID).
-    expect(event.dtstart!.slice(0, 8)).toBe(event.dtend!.slice(0, 8));
-    expect(ics).not.toContain('DTSTART;VALUE=DATE:');
-    expect(event.dtstart).not.toMatch(/Z$/);
+    expect(ics).not.toMatch(/DTSTART:\d{8}T/);
+    expect(ics).toContain('DTSTART;VALUE=DATE:');
   });
 
-  it('honors a custom window and applies it to every event regardless of TRANSP', () => {
+  it('with me + hours, only the subscriber\'s own (OPAQUE) days become timed; the other parent\'s stay all-day', () => {
     const ics = buildIcs({
       p1: 'Alice',
       p2: 'Bob',
@@ -185,21 +180,28 @@ describe('buildIcs — hours window', () => {
       hours: { startHour: 6, startMinute: 30, endHour: 21, endMinute: 45 },
     });
     const events = parseEvents(ics);
-    expect(events.length).toBeGreaterThan(0);
-    for (const ev of events) {
+    const mine = events.filter((ev) => ev.transp === 'OPAQUE');
+    const theirs = events.filter((ev) => ev.transp === 'TRANSPARENT');
+    expect(mine.length).toBeGreaterThan(0);
+    expect(theirs.length).toBeGreaterThan(0);
+
+    for (const ev of mine) {
       expect(ev.dtstart).toMatch(/T063000$/);
       expect(ev.dtend).toMatch(/T214500$/);
+      expect(ev.dtstart).not.toMatch(/Z$/);
     }
-    // TRANSP is still governed purely by me/role, unaffected by hours.
-    expect(events.some((ev) => ev.transp === 'OPAQUE')).toBe(true);
-    expect(events.some((ev) => ev.transp === 'TRANSPARENT')).toBe(true);
+    for (const ev of theirs) {
+      expect(ev.dtstart).toMatch(/^\d{8}$/);
+      expect(ev.dtend).toMatch(/^\d{8}$/);
+    }
   });
 
   it('UID stays date-only regardless of the hours window', () => {
-    const allDay = buildIcs({ p1: 'Alice', p2: 'Bob', variant: '2D', now: NOW });
+    const allDay = buildIcs({ p1: 'Alice', p2: 'Bob', me: 1, variant: '2D', now: NOW });
     const timed = buildIcs({
       p1: 'Alice',
       p2: 'Bob',
+      me: 1,
       variant: '2D',
       now: NOW,
       hours: { startHour: 7, startMinute: 0, endHour: 20, endMinute: 0 },

@@ -90,11 +90,12 @@ export function buildIcs(options: IcsOptions): string {
     if (role === null) continue;
 
     const name = role === 'p1' ? p1 : p2;
-    const transp = me !== undefined && role === `p${me}` ? 'OPAQUE' : 'TRANSPARENT';
+    const isMine = me !== undefined && role === `p${me}`;
+    const transp = isMine ? 'OPAQUE' : 'TRANSPARENT';
     const dateOnly = formatDate(day);
 
     lines.push('BEGIN:VEVENT');
-    if (hours) {
+    if (hours && isMine) {
       lines.push(`DTSTART:${formatFloatingDateTime(day, hours.startHour, hours.startMinute)}`);
       lines.push(`DTEND:${formatFloatingDateTime(day, hours.endHour, hours.endMinute)}`);
     } else {

@@ -99,18 +99,27 @@ describe('orbitIcs — §3.4 hours parameter grammar', () => {
     expect(res.body).toContain('DTSTART;VALUE=DATE:');
   });
 
-  it.each(['1', 'true', 'yes', 'on'])('truthy value %s -> default 07:00-20:00 window', (value) => {
+  it.each(['1', 'true', 'yes', 'on'])('truthy value %s -> default 07:00-20:00 window on the subscriber\'s own days', (value) => {
     const res = mockRes();
-    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: value }), res);
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', me: '1', hours: value }), res);
     expect(res.body).toMatch(/DTSTART:\d{8}T070000/);
     expect(res.body).toMatch(/DTEND:\d{8}T200000/);
+    // The other parent's days still stay all-day.
+    expect(res.body).toContain('DTSTART;VALUE=DATE:');
   });
 
-  it.each(['0630-2145', '06:30-21:45'])('valid explicit range %s -> that exact window', (value) => {
+  it.each(['0630-2145', '06:30-21:45'])('valid explicit range %s -> that exact window on the subscriber\'s own days', (value) => {
     const res = mockRes();
-    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: value }), res);
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', me: '1', hours: value }), res);
     expect(res.body).toMatch(/DTSTART:\d{8}T063000/);
     expect(res.body).toMatch(/DTEND:\d{8}T214500/);
+  });
+
+  it('without me, hours has no target to apply to — everything stays all-day', () => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: '1' }), res);
+    expect(res.body).not.toMatch(/DTSTART:\d{8}T/);
+    expect(res.body).toContain('DTSTART;VALUE=DATE:');
   });
 
   it.each([
@@ -121,7 +130,7 @@ describe('orbitIcs — §3.4 hours parameter grammar', () => {
     'garbage',
   ])('invalid/unparseable value %s -> falls back to all-day', (value) => {
     const res = mockRes();
-    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: value }), res);
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', me: '1', hours: value }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain('DTSTART;VALUE=DATE:');
   });
