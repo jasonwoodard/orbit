@@ -113,7 +113,7 @@ Notes:
 
 ### The `hours` parameter
 
-By default, events are all-day. The `hours` query parameter switches the *subscriber's own* Primary days (the ones with `TRANSP:OPAQUE`) to a **floating local time** window instead (no `Z` suffix, no `TZID` — each subscriber's calendar renders it in whatever timezone that calendar is set to):
+By default, events are all-day. The `hours` query parameter switches the *subscriber's own* Primary days (the ones with `TRANSP:OPAQUE`) to a timed window instead:
 
 | `hours` value | Resolves to |
 |---|---|
@@ -123,6 +123,31 @@ By default, events are all-day. The `hours` query parameter switches the *subscr
 | anything else unparseable | falls back to off |
 
 `hours` never touches `TRANSP` — that's still governed purely by `me`. But it only *applies* to a day where `TRANSP` is `OPAQUE`: the other parent's days, and every day when `me` isn't supplied at all, always stay all-day regardless of `hours` (see `orbit-test-plan.md` for the full decision table). Coupling it this way was a deliberate revision — an earlier version applied `hours` uniformly to every event for parameter orthogonality, but in real subscriber use a timed block on a day that isn't yours is just visual noise, not a conflict worth seeing.
+
+### The `tz` parameter
+
+The timed window `hours` produces needs a zone. `tz` is an optional IANA timezone identifier (e.g. `America/New_York`), validated with `Intl.DateTimeFormat`'s built-in zone table — no dependency, no bundled tz database:
+
+```typescript
+function parseTimeZone(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value.trim() === '') return undefined;
+  const tz = value.trim();
+  try {
+    new Intl.DateTimeFormat(undefined, { timeZone: tz });
+    return tz;
+  } catch {
+    return undefined;
+  }
+}
+```
+
+| `tz` | Emitted as |
+|---|---|
+| absent | `DTSTART:{digits}Z` / `DTEND:{digits}Z` — explicit UTC |
+| valid IANA zone | `DTSTART;TZID={tz}:{digits}` / `DTEND;TZID={tz}:{digits}` |
+| invalid/unrecognized | falls back to explicit UTC |
+
+This replaced an earlier design that emitted the timed window as **floating local time** (no `Z`, no `TZID`), on the theory that each subscriber's own calendar would display it in that calendar's configured zone. Live testing against Google Calendar's "Subscribe from URL" showed it actually treats floating time as UTC and converts to the viewer's display zone — a real deviation from strict floating-time semantics, but the one real clients exhibit. Stamping explicit UTC by default matches that observed behavior, and `tz` lets a subscriber opt into a named zone once (set-it-and-forget-it), with DST transitions resolved automatically by the receiving calendar rather than by this function. The user guide exposes `tz` as a dropdown of common zones so non-technical subscribers don't need to know the IANA identifier scheme.
 
 ### ISO week computation
 
@@ -147,6 +172,7 @@ const isWeekA = (date: Date) => getISOWeek(date) % 2 === 1; // odd = p1 starts
 - Invalid `variant` → silently default to `2D`
 - Invalid `me` → silently omit busy/free behavior (treat as unset)
 - Invalid/unparseable `hours` → silently default to off (all-day)
+- Invalid/unrecognized `tz` → silently default to explicit UTC
 
 ---
 

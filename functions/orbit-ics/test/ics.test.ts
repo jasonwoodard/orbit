@@ -170,7 +170,7 @@ describe('buildIcs — hours window (applies only to the subscriber\'s own OPAQU
     expect(ics).toContain('DTSTART;VALUE=DATE:');
   });
 
-  it('with me + hours, only the subscriber\'s own (OPAQUE) days become timed; the other parent\'s stay all-day', () => {
+  it('with me + hours but no tz, only the subscriber\'s own (OPAQUE) days become timed, stamped as explicit UTC; the other parent\'s stay all-day', () => {
     const ics = buildIcs({
       p1: 'Alice',
       p2: 'Bob',
@@ -186,13 +186,38 @@ describe('buildIcs — hours window (applies only to the subscriber\'s own OPAQU
     expect(theirs.length).toBeGreaterThan(0);
 
     for (const ev of mine) {
-      expect(ev.dtstart).toMatch(/T063000$/);
-      expect(ev.dtend).toMatch(/T214500$/);
-      expect(ev.dtstart).not.toMatch(/Z$/);
+      // No tz supplied: the chosen wall-clock digits are stamped as literal
+      // UTC (Z) rather than left floating, since floating time is handled
+      // inconsistently by real clients (observed: Google Calendar reads it
+      // as UTC anyway).
+      expect(ev.dtstart).toMatch(/T063000Z$/);
+      expect(ev.dtend).toMatch(/T214500Z$/);
     }
     for (const ev of theirs) {
       expect(ev.dtstart).toMatch(/^\d{8}$/);
       expect(ev.dtend).toMatch(/^\d{8}$/);
+    }
+  });
+
+  it('with tz, the subscriber\'s own days use TZID instead of floating/UTC', () => {
+    const ics = buildIcs({
+      p1: 'Alice',
+      p2: 'Bob',
+      me: 1,
+      variant: '2D',
+      now: NOW,
+      hours: { startHour: 7, startMinute: 0, endHour: 20, endMinute: 0 },
+      tz: 'America/New_York',
+    });
+    expect(ics).toContain('DTSTART;TZID=America/New_York:');
+    expect(ics).toContain('DTEND;TZID=America/New_York:');
+    const events = parseEvents(ics);
+    const mine = events.filter((ev) => ev.transp === 'OPAQUE');
+    expect(mine.length).toBeGreaterThan(0);
+    for (const ev of mine) {
+      expect(ev.dtstart).toMatch(/^\d{8}T070000$/);
+      expect(ev.dtend).toMatch(/^\d{8}T200000$/);
+      expect(ev.dtstart).not.toMatch(/Z$/);
     }
   });
 

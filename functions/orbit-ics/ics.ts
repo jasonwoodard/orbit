@@ -16,6 +16,7 @@ export interface IcsOptions {
   me?: 1 | 2;
   variant: Variant;
   hours?: HoursWindow;
+  tz?: string;
   now?: Date;
 }
 
@@ -40,9 +41,9 @@ function formatDate(date: Date): string {
   return `${y}${m}${d}`;
 }
 
-// Floating local time (no Z, no TZID) — each subscriber's calendar renders
-// it in whatever timezone that calendar is set to.
-function formatFloatingDateTime(date: Date, hour: number, minute: number): string {
+// Wall-clock date-time digits (YYYYMMDDTHHMMSS) with no zone marker of its
+// own — the caller decides whether to qualify it with TZID or a trailing Z.
+function formatWallClock(date: Date, hour: number, minute: number): string {
   const time = `${String(hour).padStart(2, '0')}${String(minute).padStart(2, '0')}00`;
   return `${formatDate(date)}T${time}`;
 }
@@ -70,7 +71,7 @@ function foldLine(line: string): string {
 }
 
 export function buildIcs(options: IcsOptions): string {
-  const { p1, p2, me, variant, hours, now = new Date() } = options;
+  const { p1, p2, me, variant, hours, tz, now = new Date() } = options;
   const start = addDays(now, -7);
   const end = addMonths(now, 12);
 
@@ -96,8 +97,20 @@ export function buildIcs(options: IcsOptions): string {
 
     lines.push('BEGIN:VEVENT');
     if (hours && isMine) {
-      lines.push(`DTSTART:${formatFloatingDateTime(day, hours.startHour, hours.startMinute)}`);
-      lines.push(`DTEND:${formatFloatingDateTime(day, hours.endHour, hours.endMinute)}`);
+      const start = formatWallClock(day, hours.startHour, hours.startMinute);
+      const eventEnd = formatWallClock(day, hours.endHour, hours.endMinute);
+      if (tz) {
+        // A named IANA zone: the receiving calendar resolves DST for us.
+        lines.push(`DTSTART;TZID=${tz}:${start}`);
+        lines.push(`DTEND;TZID=${tz}:${eventEnd}`);
+      } else {
+        // No zone given: stamp the chosen wall-clock digits as UTC outright
+        // rather than leaving them floating — floating (no Z, no TZID) is
+        // ambiguous in practice and Google Calendar has been observed
+        // treating it as UTC anyway, so make that explicit and correct.
+        lines.push(`DTSTART:${start}Z`);
+        lines.push(`DTEND:${eventEnd}Z`);
+      }
     } else {
       lines.push(`DTSTART;VALUE=DATE:${dateOnly}`);
       lines.push(`DTEND;VALUE=DATE:${formatDate(addDays(day, 1))}`);

@@ -167,7 +167,7 @@ For each event, `DTEND` must be exactly `DTSTART + 1 day`. This is the iCal all-
 | `hours` value | Expected behavior (on the subscriber's own `OPAQUE` days) |
 |---|---|
 | Omitted, `""`, `0`, `false`, `no`, `off` | All-day event (`DTSTART;VALUE=DATE`) |
-| `1`, `true`, `yes`, `on` | Timed event, default window `07:00`–`20:00`, floating local time (no `Z`, no `TZID`) |
+| `1`, `true`, `yes`, `on` | Timed event, default window `07:00`–`20:00`, stamped as explicit UTC unless `tz` is also given (see §3.5) |
 | Valid `HHMM-HHMM` or `HH:MM-HH:MM` (0–23h, 0–59m, start strictly before end) | Timed event using that exact window |
 | End ≤ start (e.g. `2000-0700`) | Silently falls back to all-day |
 | Out-of-range hour/minute (e.g. `2500-2600`) | Silently falls back to all-day |
@@ -190,7 +190,20 @@ Verify: `UID` is identical between an all-day request and an `hours`-enabled req
 | set | is other parent | off | TRANSPARENT | All-day |
 | set | is other parent | on | TRANSPARENT | All-day (not the subscriber's day) |
 
-### 3.5 Name values
+### 3.5 Optional parameters — `tz`
+
+`tz` qualifies the timed window `hours` produces with a named IANA zone instead of stamping it as explicit UTC. It has no effect unless `hours` also resolves to a window.
+
+| `tz` value | Expected behavior |
+|---|---|
+| Omitted | Timed window emitted as explicit UTC: `DTSTART:{digits}Z` / `DTEND:{digits}Z` |
+| Valid IANA zone (e.g. `America/New_York`, `UTC`, `Europe/London`) | Timed window emitted as `DTSTART;TZID={tz}:{digits}` / `DTEND;TZID={tz}:{digits}` |
+| Unrecognized/malformed (e.g. `Not/AZone`, `garbage`, injection-shaped string) | Silently falls back to explicit UTC |
+| Present but `hours` is off | No effect — event stays all-day |
+
+Verify: an invalid `tz` never produces a `500` or a body without `TZID=` *and* without a trailing `Z` — it must fall all the way back to a valid explicit-UTC event.
+
+### 3.6 Name values
 
 | `p1` / `p2` value | Expected behavior |
 |---|---|
@@ -199,7 +212,7 @@ Verify: `UID` is identical between an all-day request and an `hours`-enabled req
 | Empty string | Treat as missing → `400 Bad Request` |
 | Very long string (>100 chars) | Implementation choice: truncate or accept; document which |
 
-### 3.6 Content-Type header
+### 3.7 Content-Type header
 
 Every successful response must include:
 

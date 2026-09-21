@@ -135,3 +135,41 @@ describe('orbitIcs — §3.4 hours parameter grammar', () => {
     expect(res.body).toContain('DTSTART;VALUE=DATE:');
   });
 });
+
+describe('orbitIcs — §3.5 tz parameter grammar', () => {
+  it('without tz, timed events are stamped as explicit UTC (Z), not floating', () => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', me: '1', hours: '1' }), res);
+    expect(res.body).toMatch(/DTSTART:\d{8}T070000Z/);
+    expect(res.body).toMatch(/DTEND:\d{8}T200000Z/);
+  });
+
+  it.each(['America/New_York', 'America/Los_Angeles', 'UTC', 'Europe/London'])(
+    'valid IANA zone %s -> DTSTART/DTEND qualified with TZID',
+    (zone) => {
+      const res = mockRes();
+      orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', me: '1', hours: '1', tz: zone }), res);
+      expect(res.body).toContain(`DTSTART;TZID=${zone}:`);
+      expect(res.body).toContain(`DTEND;TZID=${zone}:`);
+      expect(res.body).not.toMatch(/DTSTART:\d{8}T\d{6}Z/);
+    },
+  );
+
+  it.each(['Not/AZone', 'garbage', 'America/New_York; DROP TABLE', ''])(
+    'invalid/unrecognized zone %s -> falls back to UTC',
+    (zone) => {
+      const res = mockRes();
+      orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', me: '1', hours: '1', tz: zone }), res);
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toMatch(/DTSTART:\d{8}T070000Z/);
+      expect(res.body).not.toContain('TZID=');
+    },
+  );
+
+  it('tz without hours has no effect — events stay all-day', () => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', me: '1', tz: 'America/New_York' }), res);
+    expect(res.body).toContain('DTSTART;VALUE=DATE:');
+    expect(res.body).not.toContain('TZID=');
+  });
+});

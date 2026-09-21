@@ -40,8 +40,21 @@ function parseHours(value: unknown): HoursWindow | undefined {
   return { startHour, startMinute, endHour, endMinute };
 }
 
+// Any string Intl recognizes as an IANA time zone identifier; anything else
+// (missing, malformed, unrecognized) falls back to undefined (UTC).
+function parseTimeZone(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value.trim() === '') return undefined;
+  const tz = value.trim();
+  try {
+    new Intl.DateTimeFormat(undefined, { timeZone: tz });
+    return tz;
+  } catch {
+    return undefined;
+  }
+}
+
 export function orbitIcs(req: Request, res: Response): void {
-  const { p1, p2, me, variant, hours } = req.query;
+  const { p1, p2, me, variant, hours, tz } = req.query;
 
   if (typeof p1 !== 'string' || p1.length === 0 || typeof p2 !== 'string' || p2.length === 0) {
     res
@@ -57,6 +70,7 @@ export function orbitIcs(req: Request, res: Response): void {
     me: parseMe(me),
     variant: parseVariant(variant),
     hours: parseHours(hours),
+    tz: parseTimeZone(tz),
   });
 
   res.status(200).set('Content-Type', 'text/calendar; charset=utf-8').send(ics);

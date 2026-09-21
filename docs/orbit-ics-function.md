@@ -22,7 +22,8 @@ Custom domain, mapped via Cloud Run domain mapping to the `orbitics` service (pr
 | `p2` | Yes | — | Any non-empty string | Name of the second parent; owns even ISO weeks (Week B) |
 | `me` | No | — | `1` or `2` | Marks that parent's Primary days as busy (`OPAQUE`) instead of free (`TRANSPARENT`) |
 | `variant` | No | `2D` | `2D` or `3D` | Block-length variant (see `orbit-core.md`) |
-| `hours` | No | off (all-day) | see below | Renders the *subscriber's own* Primary days as a timed local window instead of an all-day banner — requires `me` |
+| `hours` | No | off (all-day) | see below | Renders the *subscriber's own* Primary days as a timed window instead of an all-day banner — requires `me` |
+| `tz` | No | — (UTC) | Any IANA timezone identifier, e.g. `America/New_York` | Qualifies the `hours` window with a named zone instead of stamping it as literal UTC; has no effect without `hours` |
 
 Any other value for `variant` or `me` (missing, malformed, out of range) is silently ignored and falls back to the default — the request still succeeds.
 
@@ -37,7 +38,19 @@ Any other value for `variant` or `me` (missing, malformed, out of range) is sile
 | `HHMM-HHMM` or `HH:MM-HH:MM`, valid (0–23h, 0–59m, start strictly before end) | **on**, that exact window, e.g. `hours=0630-2145` |
 | anything else unparseable (bad hour/minute, end ≤ start, garbage) | falls back to **off** |
 
-Events are emitted as **floating local time** (no `Z` suffix, no `TZID`) — each subscriber's calendar renders the time in whatever timezone that calendar is currently set to, so no timezone parameter is needed.
+### `tz` grammar
+
+When `hours` produces a timed window, that window needs a zone. `tz` picks it:
+
+| `tz` value | Resolves to |
+|---|---|
+| absent | Window is stamped as **explicit UTC** (`DTSTART:...Z` / `DTEND:...Z`) |
+| a string `Intl.DateTimeFormat` recognizes as an IANA zone, e.g. `America/New_York` | Window is qualified with that zone (`DTSTART;TZID=America/New_York:...`); the receiving calendar resolves DST |
+| anything else (missing, malformed, unrecognized, injection-shaped) | Silently falls back to explicit UTC |
+
+`tz` has no effect unless `hours` is also active — a `tz` on an all-day event does nothing.
+
+An earlier version of this feed emitted the timed window as **floating local time** (no `Z`, no `TZID`), on the assumption that each subscriber's calendar would render it in that calendar's own configured timezone. In practice, Google Calendar's "Subscribe from URL" was observed treating floating time as UTC and converting to the viewer's display timezone — not RFC-invalid, but not the friendly behavior it was meant to be either. Explicit UTC by default is honest about what actually happens, and `tz` gives subscribers a way to opt into their own zone once and forget about it (see the user guide's timezone dropdown, which sets this for you).
 
 ## Responses
 
@@ -63,7 +76,7 @@ Each `VEVENT`:
 
 | Property | Value |
 |---|---|
-| `DTSTART` / `DTEND` | All-day (`;VALUE=DATE:YYYYMMDD`, `DTEND` = `DTSTART` + 1 day) by default; floating local `YYYYMMDDTHHMMSS` for both, but only on `OPAQUE` days, when `hours` resolves to a window |
+| `DTSTART` / `DTEND` | All-day (`;VALUE=DATE:YYYYMMDD`, `DTEND` = `DTSTART` + 1 day) by default; on `OPAQUE` days when `hours` resolves to a window: `YYYYMMDDTHHMMSSZ` (explicit UTC) without `tz`, or `;TZID={tz}:YYYYMMDDTHHMMSS` with a valid `tz` |
 | `SUMMARY` | `Primary : {name}` — the resolved `p1`/`p2` name for that day |
 | `TRANSP` | `OPAQUE` if that day's Primary matches `me`, otherwise `TRANSPARENT` — governed entirely by `me`; `hours` never changes it, but only applies to days where it's already `OPAQUE` |
 | `UID` | `orbit-{YYYYMMDD}@orbit.jasonwoodard.com` — always date-only regardless of `hours`, so re-subscribing, refreshing, or toggling `hours` never creates duplicates |
@@ -136,6 +149,20 @@ END:VEVENT
 curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=1&hours=0630-2145"
 ```
 
+**Timed window in a named zone, so `07:00`–`20:00` displays correctly year-round regardless of DST:**
+```bash
+curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=1&hours=1&tz=America/New_York"
+```
+```
+BEGIN:VEVENT
+DTSTART;TZID=America/New_York:20260916T070000
+DTEND;TZID=America/New_York:20260916T200000
+SUMMARY:Primary : Alice
+TRANSP:OPAQUE
+UID:orbit-20260916@orbit.jasonwoodard.com
+END:VEVENT
+```
+
 **Missing a required parameter:**
 ```bash
 curl -i "https://orbit.jasonwoodard.com/?p1=Alice"
@@ -149,7 +176,7 @@ Missing required parameter(s): p1 and p2 are both required.
 
 ## Subscribing in Google Calendar
 
-Settings → Add calendar → From URL → paste the full request URL (with your own `p1`, `p2`, `me`, `variant`, and `hours`). Google Calendar polls on its own schedule (roughly every 12–24 hours); there's no way to force an immediate refresh from the subscriber side.
+Settings → Add calendar → From URL → paste the full request URL (with your own `p1`, `p2`, `me`, `variant`, `hours`, and `tz`). Google Calendar polls on its own schedule (roughly every 12–24 hours); there's no way to force an immediate refresh from the subscriber side.
 
 ## Source
 
