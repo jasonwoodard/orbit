@@ -85,3 +85,44 @@ describe('orbitIcs — §3.3 me handling', () => {
     expect(res.body).not.toContain('OPAQUE');
   });
 });
+
+describe('orbitIcs — §3.4 hours parameter grammar', () => {
+  it('absent -> all-day events', () => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob' }), res);
+    expect(res.body).toContain('DTSTART;VALUE=DATE:');
+  });
+
+  it.each(['0', 'false', 'no', 'off'])('falsy value %s -> all-day events', (value) => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: value }), res);
+    expect(res.body).toContain('DTSTART;VALUE=DATE:');
+  });
+
+  it.each(['1', 'true', 'yes', 'on'])('truthy value %s -> default 07:00-20:00 window', (value) => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: value }), res);
+    expect(res.body).toMatch(/DTSTART:\d{8}T070000/);
+    expect(res.body).toMatch(/DTEND:\d{8}T200000/);
+  });
+
+  it.each(['0630-2145', '06:30-21:45'])('valid explicit range %s -> that exact window', (value) => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: value }), res);
+    expect(res.body).toMatch(/DTSTART:\d{8}T063000/);
+    expect(res.body).toMatch(/DTEND:\d{8}T214500/);
+  });
+
+  it.each([
+    '2000-0700', // end before start
+    '2500-2600', // out-of-range hour
+    '0700-0760', // out-of-range minute
+    '0700-0700', // zero-length window
+    'garbage',
+  ])('invalid/unparseable value %s -> falls back to all-day', (value) => {
+    const res = mockRes();
+    orbitIcs(mockReq({ p1: 'Alice', p2: 'Bob', hours: value }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toContain('DTSTART;VALUE=DATE:');
+  });
+});

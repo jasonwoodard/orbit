@@ -149,3 +149,63 @@ describe('buildIcs — text escaping / injection safety', () => {
     expect(endCount).toBe(beginCount);
   });
 });
+
+describe('buildIcs — hours window', () => {
+  it('without hours, events stay all-day (VALUE=DATE)', () => {
+    const ics = buildIcs({ p1: 'Alice', p2: 'Bob', variant: '2D', now: NOW });
+    const [event] = parseEvents(ics);
+    expect(event.dtstart).toMatch(/^\d{8}$/);
+    expect(ics).toContain('DTSTART;VALUE=DATE:');
+  });
+
+  it('with hours, events become floating local DATE-TIME for the given window', () => {
+    const ics = buildIcs({
+      p1: 'Alice',
+      p2: 'Bob',
+      variant: '2D',
+      now: NOW,
+      hours: { startHour: 7, startMinute: 0, endHour: 20, endMinute: 0 },
+    });
+    const [event] = parseEvents(ics);
+    expect(event.dtstart).toMatch(/^\d{8}T070000$/);
+    expect(event.dtend).toMatch(/^\d{8}T200000$/);
+    // Same calendar day, floating (no Z suffix, no TZID).
+    expect(event.dtstart!.slice(0, 8)).toBe(event.dtend!.slice(0, 8));
+    expect(ics).not.toContain('DTSTART;VALUE=DATE:');
+    expect(event.dtstart).not.toMatch(/Z$/);
+  });
+
+  it('honors a custom window and applies it to every event regardless of TRANSP', () => {
+    const ics = buildIcs({
+      p1: 'Alice',
+      p2: 'Bob',
+      me: 1,
+      variant: '2D',
+      now: NOW,
+      hours: { startHour: 6, startMinute: 30, endHour: 21, endMinute: 45 },
+    });
+    const events = parseEvents(ics);
+    expect(events.length).toBeGreaterThan(0);
+    for (const ev of events) {
+      expect(ev.dtstart).toMatch(/T063000$/);
+      expect(ev.dtend).toMatch(/T214500$/);
+    }
+    // TRANSP is still governed purely by me/role, unaffected by hours.
+    expect(events.some((ev) => ev.transp === 'OPAQUE')).toBe(true);
+    expect(events.some((ev) => ev.transp === 'TRANSPARENT')).toBe(true);
+  });
+
+  it('UID stays date-only regardless of the hours window', () => {
+    const allDay = buildIcs({ p1: 'Alice', p2: 'Bob', variant: '2D', now: NOW });
+    const timed = buildIcs({
+      p1: 'Alice',
+      p2: 'Bob',
+      variant: '2D',
+      now: NOW,
+      hours: { startHour: 7, startMinute: 0, endHour: 20, endMinute: 0 },
+    });
+    const [allDayEvent] = parseEvents(allDay);
+    const [timedEvent] = parseEvents(timed);
+    expect(allDayEvent.uid).toBe(timedEvent.uid);
+  });
+});
