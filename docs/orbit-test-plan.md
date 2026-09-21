@@ -160,7 +160,35 @@ For each event, `DTEND` must be exactly `DTSTART + 1 day`. This is the iCal all-
 | `3` (out of range) | Silently omit busy/free (treat as unset) |
 | `alice` (string) | Silently omit busy/free |
 
-### 3.4 Name values
+### 3.4 Optional parameters — `hours`
+
+`hours` controls event *shape* (all-day vs. timed local window) and is fully independent of `me` (which controls `TRANSP` only).
+
+| `hours` value | Expected behavior |
+|---|---|
+| Omitted, `""`, `0`, `false`, `no`, `off` | All-day event (`DTSTART;VALUE=DATE`) |
+| `1`, `true`, `yes`, `on` | Timed event, default window `07:00`–`20:00`, floating local time (no `Z`, no `TZID`) |
+| Valid `HHMM-HHMM` or `HH:MM-HH:MM` (0–23h, 0–59m, start strictly before end) | Timed event using that exact window |
+| End ≤ start (e.g. `2000-0700`) | Silently falls back to all-day |
+| Out-of-range hour/minute (e.g. `2500-2600`) | Silently falls back to all-day |
+| Non-matching garbage string | Silently falls back to all-day |
+
+Verify: `UID` is identical between an all-day request and an `hours`-enabled request for the same date (UID is always date-only). Verify: `TRANSP` is unchanged by `hours` — toggling `hours` never flips busy/free.
+
+#### 3.4.1 `me` × `hours` decision table
+
+Every combination below must be independently meaningful — none should be a silent no-op:
+
+| `me` | This day's Primary | `hours` | `TRANSP` | Shape |
+|---|---|---|---|---|
+| unset | — | off | TRANSPARENT | All-day |
+| unset | — | on | TRANSPARENT | Timed |
+| set | is `me` | off | OPAQUE | All-day |
+| set | is `me` | on | OPAQUE | Timed |
+| set | is other parent | off | TRANSPARENT | All-day |
+| set | is other parent | on | TRANSPARENT | Timed |
+
+### 3.5 Name values
 
 | `p1` / `p2` value | Expected behavior |
 |---|---|
@@ -169,7 +197,7 @@ For each event, `DTEND` must be exactly `DTSTART + 1 day`. This is the iCal all-
 | Empty string | Treat as missing → `400 Bad Request` |
 | Very long string (>100 chars) | Implementation choice: truncate or accept; document which |
 
-### 3.5 Content-Type header
+### 3.6 Content-Type header
 
 Every successful response must include:
 

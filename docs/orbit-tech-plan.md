@@ -106,9 +106,23 @@ END:VCALENDAR
 Notes:
 - `X-WR-CALNAME` is always `ORBIT ({p1} | {p2})` (e.g. `ORBIT (Alice | Bob)`), regardless of whether `me` is supplied
 - `REFRESH-INTERVAL` set to 12 hours — fast enough to catch same-day corrections
-- `UID` is deterministic (`orbit-{date}@{domain}`) — ensures GCal deduplicates correctly on refresh rather than creating duplicate events
+- `UID` is deterministic (`orbit-{date}@{domain}`) — ensures GCal deduplicates correctly on refresh rather than creating duplicate events, and stays date-only regardless of the `hours` parameter
 - `SUMMARY` uses the subscriber's resolved name (e.g. `Primary : Alice` or `Primary : Bob`)
-- `DTEND` is the following day (iCal all-day event convention)
+- `DTEND` is the following day (iCal all-day event convention) by default; see `hours` below for the timed alternative
+- `TRANSP` is governed entirely by `me` — never by `hours`
+
+### The `hours` parameter
+
+By default, events are all-day. The `hours` query parameter switches an event to a **floating local time** window instead (no `Z` suffix, no `TZID` — each subscriber's calendar renders it in whatever timezone that calendar is set to):
+
+| `hours` value | Resolves to |
+|---|---|
+| absent, `""`, `0`, `false`, `no`, `off` | off — all-day |
+| `1`, `true`, `yes`, `on` | on, default `07:00`–`20:00` |
+| `HHMM-HHMM` / `HH:MM-HH:MM`, valid (start strictly before end) | on, that exact window |
+| anything else unparseable | falls back to off |
+
+`hours` only ever changes event shape; it never touches `TRANSP`, so it's fully independent of `me` — every combination of the two is meaningful (see `orbit-test-plan.md` for the full decision table).
 
 ### ISO week computation
 
@@ -132,6 +146,7 @@ const isWeekA = (date: Date) => getISOWeek(date) % 2 === 1; // odd = p1 starts
 - Missing `p1` or `p2` → return `400 Bad Request` with plain text error
 - Invalid `variant` → silently default to `2D`
 - Invalid `me` → silently omit busy/free behavior (treat as unset)
+- Invalid/unparseable `hours` → silently default to off (all-day)
 
 ---
 

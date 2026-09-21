@@ -58,9 +58,9 @@ After one month of running ORBIT, the friction point is schedule legibility. The
 
 ### Events
 
-- **One all-day event per active day** (Monday through Saturday)
+- **One event per active day** (Monday through Saturday)
 - **No event on Sunday** — Sunday is outside the rotation
-- Event covers the full calendar day (`DTSTART;VALUE=DATE` / `DTEND;VALUE=DATE`)
+- Event covers the full calendar day by default (`DTSTART;VALUE=DATE` / `DTEND;VALUE=DATE`); the `hours` parameter switches it to a timed local window instead (see below)
 - Events are non-blocking by default; the `me` parameter overrides this (see below)
 
 ### Event title format
@@ -87,6 +87,19 @@ When `me` is supplied, the feed sets the iCal `TRANSP` property per event:
 
 This means scheduling tools correctly reflect that the Primary parent is unavailable on their primary days — without any manual blocking.
 
+### `hours` parameter — timed vs. all-day rendering
+
+An all-day `OPAQUE` event correctly marks the whole day busy for free/busy lookups, but visually it's a banner, not a block in the day grid — it doesn't read as an obvious conflict when scanning a day view. `hours` fixes that by switching the event's *shape*, independent of `me`:
+
+| Condition | Shape |
+|---|---|
+| `hours` absent or falsy (`0`, `false`, `no`, `off`) | All-day (default) |
+| `hours` truthy (`1`, `true`, `yes`, `on`) | Timed, default `07:00`–`20:00` |
+| `hours` a valid `HHMM-HHMM` / `HH:MM-HH:MM` range | Timed, that exact window |
+| `hours` unparseable | Falls back to all-day |
+
+`hours` never changes `TRANSP` — busy/free is still decided purely by `me`. This keeps the two parameters orthogonal: every combination of `me` and `hours` is meaningful, none are invalid or redundant. Times are emitted as floating local time (no timezone conversion, no `TZID`) — each subscriber's calendar renders it in that calendar's own configured timezone.
+
 ### Parameters
 
 | Parameter | Required | Default | Values | Notes |
@@ -95,6 +108,7 @@ This means scheduling tools correctly reflect that the Primary parent is unavail
 | `p2` | Yes | — | Any string | Name of the second parent (owns even ISO weeks, e.g. `Bob`) |
 | `me` | No | — | `1` or `2` | Which parent is subscribing; enables busy/free |
 | `variant` | No | `2D` | `2D` or `3D` | Block length variant |
+| `hours` | No | off | see above | Renders events as a timed window instead of all-day |
 
 ### Rotation logic
 
@@ -136,6 +150,12 @@ https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob
 
 # 3D variant
 https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&variant=3D
+
+# Timed 07:00-20:00 window instead of all-day
+https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&hours=1
+
+# Custom timed window
+https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&hours=0630-2145
 ```
 
 ---

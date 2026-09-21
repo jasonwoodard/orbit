@@ -22,8 +22,22 @@ Custom domain, mapped via Cloud Run domain mapping to the `orbitics` service (pr
 | `p2` | Yes | — | Any non-empty string | Name of the second parent; owns even ISO weeks (Week B) |
 | `me` | No | — | `1` or `2` | Marks that parent's Primary days as busy (`OPAQUE`) instead of free (`TRANSPARENT`) |
 | `variant` | No | `2D` | `2D` or `3D` | Block-length variant (see `orbit-core.md`) |
+| `hours` | No | off (all-day) | see below | Renders events as a timed local window instead of an all-day banner |
 
 Any other value for `variant` or `me` (missing, malformed, out of range) is silently ignored and falls back to the default — the request still succeeds.
+
+### `hours` grammar
+
+`hours` is independent of `me` — it only ever controls event *shape* (all-day vs. timed), never busy/free. It's resolved in three tiers:
+
+| `hours` value | Resolves to |
+|---|---|
+| absent, `""`, `0`, `false`, `no`, `off` | **off** — all-day event (today's default) |
+| `1`, `true`, `yes`, `on` | **on**, default window `07:00`–`20:00` |
+| `HHMM-HHMM` or `HH:MM-HH:MM`, valid (0–23h, 0–59m, start strictly before end) | **on**, that exact window, e.g. `hours=0630-2145` |
+| anything else unparseable (bad hour/minute, end ≤ start, garbage) | falls back to **off** |
+
+Events are emitted as **floating local time** (no `Z` suffix, no `TZID`) — each subscriber's calendar renders the time in whatever timezone that calendar is currently set to, so no timezone parameter is needed.
 
 ## Responses
 
@@ -33,7 +47,7 @@ Any other value for `variant` or `me` (missing, malformed, out of range) is sile
 Content-Type: text/calendar; charset=utf-8
 ```
 
-Body is an RFC 5545 iCalendar document covering **7 days before today through 12 months forward**, one all-day event per active day (Monday–Saturday; Sunday is never included).
+Body is an RFC 5545 iCalendar document covering **7 days before today through 12 months forward**, one event per active day (Monday–Saturday; Sunday is never included) — all-day by default, or a timed window when `hours` is on.
 
 ### Error — `400 Bad Request`
 
@@ -49,11 +63,10 @@ Each `VEVENT`:
 
 | Property | Value |
 |---|---|
-| `DTSTART;VALUE=DATE` | The active day, `YYYYMMDD` |
-| `DTEND;VALUE=DATE` | `DTSTART` + 1 day (iCal all-day convention) |
+| `DTSTART` / `DTEND` | All-day (`;VALUE=DATE:YYYYMMDD`, `DTEND` = `DTSTART` + 1 day) by default; floating local `YYYYMMDDTHHMMSS` for both when `hours` resolves to a window |
 | `SUMMARY` | `Primary : {name}` — the resolved `p1`/`p2` name for that day |
-| `TRANSP` | `OPAQUE` if that day's Primary matches `me`, otherwise `TRANSPARENT` |
-| `UID` | `orbit-{YYYYMMDD}@orbit.jasonwoodard.com` — deterministic, so re-subscribing or refreshing never creates duplicates |
+| `TRANSP` | `OPAQUE` if that day's Primary matches `me`, otherwise `TRANSPARENT` — governed entirely by `me`, unaffected by `hours` |
+| `UID` | `orbit-{YYYYMMDD}@orbit.jasonwoodard.com` — always date-only regardless of `hours`, so re-subscribing, refreshing, or toggling `hours` never creates duplicates |
 
 Calendar-level properties: `X-WR-CALNAME` is always set to `ORBIT ({p1} | {p2})`, regardless of whether `me` is supplied, and `REFRESH-INTERVAL;VALUE=DURATION:PT12H` tells clients how often to poll.
 
@@ -97,6 +110,25 @@ END:VCALENDAR
 curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=2&variant=3D"
 ```
 
+**Alice subscribing with a timed window instead of all-day, default `07:00`–`20:00`:**
+```bash
+curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=1&hours=1"
+```
+```
+BEGIN:VEVENT
+DTSTART:20260914T070000
+DTEND:20260914T200000
+SUMMARY:Primary : Bob
+TRANSP:TRANSPARENT
+UID:orbit-20260914@orbit.jasonwoodard.com
+END:VEVENT
+```
+
+**Custom window (early-riser family, 6:30am–9:45pm):**
+```bash
+curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=1&hours=0630-2145"
+```
+
 **Missing a required parameter:**
 ```bash
 curl -i "https://orbit.jasonwoodard.com/?p1=Alice"
@@ -110,7 +142,7 @@ Missing required parameter(s): p1 and p2 are both required.
 
 ## Subscribing in Google Calendar
 
-Settings → Add calendar → From URL → paste the full request URL (with your own `p1`, `p2`, `me`, and `variant`). Google Calendar polls on its own schedule (roughly every 12–24 hours); there's no way to force an immediate refresh from the subscriber side.
+Settings → Add calendar → From URL → paste the full request URL (with your own `p1`, `p2`, `me`, `variant`, and `hours`). Google Calendar polls on its own schedule (roughly every 12–24 hours); there's no way to force an immediate refresh from the subscriber side.
 
 ## Source
 

@@ -3,11 +3,19 @@ import { getPrimaryRole, type Variant } from './rotation';
 const DOMAIN = 'orbit.jasonwoodard.com';
 const FOLD_LENGTH = 75;
 
+export interface HoursWindow {
+  startHour: number;
+  startMinute: number;
+  endHour: number;
+  endMinute: number;
+}
+
 export interface IcsOptions {
   p1: string;
   p2: string;
   me?: 1 | 2;
   variant: Variant;
+  hours?: HoursWindow;
   now?: Date;
 }
 
@@ -30,6 +38,13 @@ function formatDate(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}${m}${d}`;
+}
+
+// Floating local time (no Z, no TZID) — each subscriber's calendar renders
+// it in whatever timezone that calendar is set to.
+function formatFloatingDateTime(date: Date, hour: number, minute: number): string {
+  const time = `${String(hour).padStart(2, '0')}${String(minute).padStart(2, '0')}00`;
+  return `${formatDate(date)}T${time}`;
 }
 
 // RFC 5545 §3.3.11 TEXT escaping. Also collapses real line breaks so a
@@ -55,7 +70,7 @@ function foldLine(line: string): string {
 }
 
 export function buildIcs(options: IcsOptions): string {
-  const { p1, p2, me, variant, now = new Date() } = options;
+  const { p1, p2, me, variant, hours, now = new Date() } = options;
   const start = addDays(now, -7);
   const end = addMonths(now, 12);
 
@@ -76,15 +91,19 @@ export function buildIcs(options: IcsOptions): string {
 
     const name = role === 'p1' ? p1 : p2;
     const transp = me !== undefined && role === `p${me}` ? 'OPAQUE' : 'TRANSPARENT';
-    const dtstart = formatDate(day);
-    const dtend = formatDate(addDays(day, 1));
+    const dateOnly = formatDate(day);
 
     lines.push('BEGIN:VEVENT');
-    lines.push(`DTSTART;VALUE=DATE:${dtstart}`);
-    lines.push(`DTEND;VALUE=DATE:${dtend}`);
+    if (hours) {
+      lines.push(`DTSTART:${formatFloatingDateTime(day, hours.startHour, hours.startMinute)}`);
+      lines.push(`DTEND:${formatFloatingDateTime(day, hours.endHour, hours.endMinute)}`);
+    } else {
+      lines.push(`DTSTART;VALUE=DATE:${dateOnly}`);
+      lines.push(`DTEND;VALUE=DATE:${formatDate(addDays(day, 1))}`);
+    }
     lines.push(`SUMMARY:${escapeText(`Primary : ${name}`)}`);
     lines.push(`TRANSP:${transp}`);
-    lines.push(`UID:orbit-${dtstart}@${DOMAIN}`);
+    lines.push(`UID:orbit-${dateOnly}@${DOMAIN}`);
     lines.push('END:VEVENT');
   }
 
