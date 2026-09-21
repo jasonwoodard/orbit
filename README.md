@@ -1,6 +1,6 @@
 # ORBIT — Our Rotation, Both In Turn
 
-A fortnightly custody/parenting rotation, plus a calendar feed that keeps it visible without anyone having to remember it.
+A fortnightly lead parent rotation, plus a calendar feed that keeps it visible without anyone having to remember it.
 
 ---
 
