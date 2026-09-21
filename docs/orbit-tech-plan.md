@@ -82,6 +82,20 @@ Notes:
 - **Host:** Google Cloud (dedicated project), proxied via custom subdomain
 - **Repo:** GitHub, under `functions/orbit-ics/`
 
+### GCP products in use
+
+Cloud Functions gen2 deploys onto Cloud Run under the hood, which is why both names show up across this project's tooling and URLs. Deployed via `gcloud functions deploy` (see `package.json`'s `deploy` script) to project `jw-orbit`, region `us-central1`.
+
+| Product | Role in this project |
+|---|---|
+| **Cloud Functions (2nd gen)** | Hosts `orbitIcs`, the HTTP-triggered function that generates the ICS feed on every request |
+| **Cloud Run** | The actual compute layer gen2 Functions deploy runs on (service name `orbitics`); also owns the custom domain mapping (`orbit.jasonwoodard.com` → the `orbitics` service) |
+| **Artifact Registry** | Stores the container image `gcloud functions deploy` builds for each deployment |
+| **Cloud Build** | Builds that container image as part of `gcloud functions deploy` |
+| **IAM** | Grants the `allUsers` invoker role needed for unauthenticated access (`--allow-unauthenticated`) |
+
+DNS (`orbit.jasonwoodard.com` CNAME) is managed outside GCP, at the domain's existing registrar/DNS provider — Cloud Run's domain mapping only needs the CNAME to point at it, it doesn't require Cloud DNS.
+
 ### ICS structure
 
 ```
