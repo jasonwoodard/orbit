@@ -162,9 +162,9 @@ For each event, `DTEND` must be exactly `DTSTART + 1 day`. This is the iCal all-
 
 ### 3.4 Optional parameters — `hours`
 
-`hours` controls event *shape* (all-day vs. timed local window) and is fully independent of `me` (which controls `TRANSP` only).
+`hours` controls event *shape* (all-day vs. timed local window), but only for a day where `TRANSP` is `OPAQUE` for this request (i.e. `me` is set and matches that day's Primary). `TRANSP` itself is still controlled purely by `me`.
 
-| `hours` value | Expected behavior |
+| `hours` value | Expected behavior (on the subscriber's own `OPAQUE` days) |
 |---|---|
 | Omitted, `""`, `0`, `false`, `no`, `off` | All-day event (`DTSTART;VALUE=DATE`) |
 | `1`, `true`, `yes`, `on` | Timed event, default window `07:00`–`20:00`, floating local time (no `Z`, no `TZID`) |
@@ -173,20 +173,22 @@ For each event, `DTEND` must be exactly `DTSTART + 1 day`. This is the iCal all-
 | Out-of-range hour/minute (e.g. `2500-2600`) | Silently falls back to all-day |
 | Non-matching garbage string | Silently falls back to all-day |
 
+Regardless of `hours`, a `TRANSPARENT` day (the other parent's day, or any day when `me` is omitted) always stays all-day — `hours` has nothing to apply to there.
+
 Verify: `UID` is identical between an all-day request and an `hours`-enabled request for the same date (UID is always date-only). Verify: `TRANSP` is unchanged by `hours` — toggling `hours` never flips busy/free.
 
 #### 3.4.1 `me` × `hours` decision table
 
-Every combination below must be independently meaningful — none should be a silent no-op:
+`hours` intentionally has no effect except on the subscriber's own `OPAQUE` day — a timed block only means something on a day that's actually yours:
 
 | `me` | This day's Primary | `hours` | `TRANSP` | Shape |
 |---|---|---|---|---|
 | unset | — | off | TRANSPARENT | All-day |
-| unset | — | on | TRANSPARENT | Timed |
+| unset | — | on | TRANSPARENT | All-day (no `me` to hinge "yours" on) |
 | set | is `me` | off | OPAQUE | All-day |
-| set | is `me` | on | OPAQUE | Timed |
+| set | is `me` | on | OPAQUE | **Timed** — the only cell `hours` actually changes |
 | set | is other parent | off | TRANSPARENT | All-day |
-| set | is other parent | on | TRANSPARENT | Timed |
+| set | is other parent | on | TRANSPARENT | All-day (not the subscriber's day) |
 
 ### 3.5 Name values
 

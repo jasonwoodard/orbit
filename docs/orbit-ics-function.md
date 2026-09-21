@@ -22,13 +22,13 @@ Custom domain, mapped via Cloud Run domain mapping to the `orbitics` service (pr
 | `p2` | Yes | — | Any non-empty string | Name of the second parent; owns even ISO weeks (Week B) |
 | `me` | No | — | `1` or `2` | Marks that parent's Primary days as busy (`OPAQUE`) instead of free (`TRANSPARENT`) |
 | `variant` | No | `2D` | `2D` or `3D` | Block-length variant (see `orbit-core.md`) |
-| `hours` | No | off (all-day) | see below | Renders events as a timed local window instead of an all-day banner |
+| `hours` | No | off (all-day) | see below | Renders the *subscriber's own* Primary days as a timed local window instead of an all-day banner — requires `me` |
 
 Any other value for `variant` or `me` (missing, malformed, out of range) is silently ignored and falls back to the default — the request still succeeds.
 
 ### `hours` grammar
 
-`hours` is independent of `me` — it only ever controls event *shape* (all-day vs. timed), never busy/free. It's resolved in three tiers:
+`hours` controls event *shape*, never busy/free (`TRANSP` is still decided purely by `me`). But it only reshapes a day where `TRANSP` is `OPAQUE` for this request — i.e. a day where `me` is set and matches that day's Primary. Without `me`, or on the other parent's days, `hours` has nothing to apply to and those events stay all-day no matter what. It's resolved in three tiers:
 
 | `hours` value | Resolves to |
 |---|---|
@@ -47,7 +47,7 @@ Events are emitted as **floating local time** (no `Z` suffix, no `TZID`) — eac
 Content-Type: text/calendar; charset=utf-8
 ```
 
-Body is an RFC 5545 iCalendar document covering **7 days before today through 12 months forward**, one event per active day (Monday–Saturday; Sunday is never included) — all-day by default, or a timed window when `hours` is on.
+Body is an RFC 5545 iCalendar document covering **7 days before today through 12 months forward**, one event per active day (Monday–Saturday; Sunday is never included) — all-day by default, or a timed window for the subscriber's own Primary days when `hours` is on.
 
 ### Error — `400 Bad Request`
 
@@ -63,9 +63,9 @@ Each `VEVENT`:
 
 | Property | Value |
 |---|---|
-| `DTSTART` / `DTEND` | All-day (`;VALUE=DATE:YYYYMMDD`, `DTEND` = `DTSTART` + 1 day) by default; floating local `YYYYMMDDTHHMMSS` for both when `hours` resolves to a window |
+| `DTSTART` / `DTEND` | All-day (`;VALUE=DATE:YYYYMMDD`, `DTEND` = `DTSTART` + 1 day) by default; floating local `YYYYMMDDTHHMMSS` for both, but only on `OPAQUE` days, when `hours` resolves to a window |
 | `SUMMARY` | `Primary : {name}` — the resolved `p1`/`p2` name for that day |
-| `TRANSP` | `OPAQUE` if that day's Primary matches `me`, otherwise `TRANSPARENT` — governed entirely by `me`, unaffected by `hours` |
+| `TRANSP` | `OPAQUE` if that day's Primary matches `me`, otherwise `TRANSPARENT` — governed entirely by `me`; `hours` never changes it, but only applies to days where it's already `OPAQUE` |
 | `UID` | `orbit-{YYYYMMDD}@orbit.jasonwoodard.com` — always date-only regardless of `hours`, so re-subscribing, refreshing, or toggling `hours` never creates duplicates |
 
 Calendar-level properties: `X-WR-CALNAME` is always set to `ORBIT ({p1} | {p2})`, regardless of whether `me` is supplied, and `REFRESH-INTERVAL;VALUE=DURATION:PT12H` tells clients how often to poll.
@@ -110,17 +110,24 @@ END:VCALENDAR
 curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=2&variant=3D"
 ```
 
-**Alice subscribing with a timed window instead of all-day, default `07:00`–`20:00`:**
+**Alice subscribing with a timed window instead of all-day, default `07:00`–`20:00`.** Note that her own (`OPAQUE`) day is timed, but Bob's (`TRANSPARENT`) day stays all-day — `hours` only reshapes days that are actually hers:
 ```bash
 curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=1&hours=1"
 ```
 ```
 BEGIN:VEVENT
-DTSTART:20260914T070000
-DTEND:20260914T200000
+DTSTART;VALUE=DATE:20260914
+DTEND;VALUE=DATE:20260915
 SUMMARY:Primary : Bob
 TRANSP:TRANSPARENT
 UID:orbit-20260914@orbit.jasonwoodard.com
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260916T070000
+DTEND:20260916T200000
+SUMMARY:Primary : Alice
+TRANSP:OPAQUE
+UID:orbit-20260916@orbit.jasonwoodard.com
 END:VEVENT
 ```
 

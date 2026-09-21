@@ -621,23 +621,29 @@
       : `Events are <strong>display-only</strong> — they never block scheduling.`);
 
     let hoursValid = true;
-    if (state.hoursMode === 'off') {
+    let lastBulletIsWarning = false;
+
+    if (!state.busyFree && state.hoursMode !== 'off') {
+      bullets.push(`Since you chose Display only, there's no "your day" to time-block — all events stay all-day. Choose "Mark my days as busy" above to use a timed window.`);
+      lastBulletIsWarning = true;
+    } else if (state.hoursMode === 'off') {
       bullets.push('Events appear as an <strong>all-day</strong> banner.');
     } else if (state.hoursMode === 'default') {
-      bullets.push('Events are timed <strong>7:00 AM–20:00 (8:00 PM)</strong> — a real block in your day grid, not all-day.');
+      bullets.push(`Your own Primary days are timed <strong>7:00 AM–8:00 PM</strong> — a real block in your day grid. ${partner}'s days stay all-day.`);
     } else {
       hoursValid = customRangeValid();
       if (hoursValid) {
-        bullets.push(`Events are timed <strong>${formatTime(el('customStart').value)}–${formatTime(el('customEnd').value)}</strong> — a real block in your day grid, not all-day.`);
+        bullets.push(`Your own Primary days are timed <strong>${formatTime(el('customStart').value)}–${formatTime(el('customEnd').value)}</strong> — a real block in your day grid. ${partner}'s days stay all-day.`);
       } else {
         bullets.push('End time must be after start time — falling back to all-day for now.');
+        lastBulletIsWarning = true;
       }
     }
 
     el('hours-warning').style.display = (state.hoursMode === 'custom' && !hoursValid) ? 'block' : 'none';
 
     el('preview-list').innerHTML = bullets.map((b, i) =>
-      `<li${i === bullets.length - 1 && state.hoursMode === 'custom' && !hoursValid ? ' class="warning"' : ''}>${b}</li>`
+      `<li${i === bullets.length - 1 && lastBulletIsWarning ? ' class="warning"' : ''}>${b}</li>`
     ).join('');
 
     buildURL(hoursValid);

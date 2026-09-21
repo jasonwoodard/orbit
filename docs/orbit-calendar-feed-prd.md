@@ -89,7 +89,7 @@ This means scheduling tools correctly reflect that the Primary parent is unavail
 
 ### `hours` parameter — timed vs. all-day rendering
 
-An all-day `OPAQUE` event correctly marks the whole day busy for free/busy lookups, but visually it's a banner, not a block in the day grid — it doesn't read as an obvious conflict when scanning a day view. `hours` fixes that by switching the event's *shape*, independent of `me`:
+An all-day `OPAQUE` event correctly marks the whole day busy for free/busy lookups, but visually it's a banner, not a block in the day grid — it doesn't read as an obvious conflict when scanning a day view. `hours` fixes that by switching the *subscriber's own* Primary days from an all-day banner to a timed local window:
 
 | Condition | Shape |
 |---|---|
@@ -98,7 +98,7 @@ An all-day `OPAQUE` event correctly marks the whole day busy for free/busy looku
 | `hours` a valid `HHMM-HHMM` / `HH:MM-HH:MM` range | Timed, that exact window |
 | `hours` unparseable | Falls back to all-day |
 
-`hours` never changes `TRANSP` — busy/free is still decided purely by `me`. This keeps the two parameters orthogonal: every combination of `me` and `hours` is meaningful, none are invalid or redundant. Times are emitted as floating local time (no timezone conversion, no `TZID`) — each subscriber's calendar renders it in that calendar's own configured timezone.
+`hours` only ever reshapes a day where `TRANSP` is `OPAQUE` for this request — i.e., a day where the Primary matches `me`. The other parent's days, and every day when `me` is not supplied at all, always stay all-day regardless of `hours`: there's no personal conflict to visualize on a day that isn't yours, and no "yours" to speak of without `me`. Times are emitted as floating local time (no timezone conversion, no `TZID`) — each subscriber's calendar renders it in that calendar's own configured timezone.
 
 ### Parameters
 
