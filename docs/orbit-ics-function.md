@@ -9,10 +9,10 @@ For a friendlier walkthrough that builds your personal subscription URL for you,
 ## Endpoint
 
 ```
-GET https://orbitics-lvfps3j5mq-uc.a.run.app/
+GET https://orbit.jasonwoodard.com/
 ```
 
-This is the current Cloud Run URL (project `jw-orbit`, region `us-central1`). It will move to a custom subdomain once DNS is configured (see `orbit-tech-plan.md` § Build Sequence, step 8) — update this page when that happens.
+Custom domain, mapped via Cloud Run domain mapping to the `orbitics` service (project `jw-orbit`, region `us-central1`). The underlying Cloud Run URL (`https://orbitics-lvfps3j5mq-uc.a.run.app/`) still works and returns identical output, but `orbit.jasonwoodard.com` is the canonical endpoint to share.
 
 ## Parameters
 
@@ -63,12 +63,12 @@ Note: Google Calendar's "Subscribe from URL" often ignores `X-WR-CALNAME` on the
 
 **Shared/display feed, no busy-free:**
 ```bash
-curl "https://orbitics-lvfps3j5mq-uc.a.run.app/?p1=Alice&p2=Bob"
+curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob"
 ```
 
 **Alice subscribing (her Primary days show as busy), 2D variant:**
 ```bash
-curl "https://orbitics-lvfps3j5mq-uc.a.run.app/?p1=Alice&p2=Bob&me=1"
+curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=1"
 ```
 ```
 HTTP/2 200
@@ -94,12 +94,12 @@ END:VCALENDAR
 
 **Bob subscribing, 3D variant:**
 ```bash
-curl "https://orbitics-lvfps3j5mq-uc.a.run.app/?p1=Alice&p2=Bob&me=2&variant=3D"
+curl "https://orbit.jasonwoodard.com/?p1=Alice&p2=Bob&me=2&variant=3D"
 ```
 
 **Missing a required parameter:**
 ```bash
-curl -i "https://orbitics-lvfps3j5mq-uc.a.run.app/?p1=Alice"
+curl -i "https://orbit.jasonwoodard.com/?p1=Alice"
 ```
 ```
 HTTP/2 400
