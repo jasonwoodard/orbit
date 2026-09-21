@@ -40,7 +40,7 @@ Expected traffic: **2–6 requests/day** (two subscribers, GCal refresh cadence 
 
 ### Decision: GitHub Pages
 
-The user guide (`orbit-cal-user-guide.html`) is a single self-contained HTML file with no server-side logic. Its value is shareability — any family adopting ORBIT needs a URL to send, not a file to attach. GitHub Pages serves it free, deploys on every push to `main`, and requires no additional tooling.
+The user guide (`orbit-user-guide.html`) is a single self-contained HTML file with no server-side logic. Its value is shareability — any family adopting ORBIT needs a URL to send, not a file to attach. GitHub Pages serves it free, deploys on every push to `main`, and requires no additional tooling.
 
 The guide is served from the `docs/` directory, which is also where GitHub Pages is pointed. No separate repo or branch needed.
 
@@ -64,7 +64,7 @@ orbit/
   docs/                             ← GitHub Pages root
     ORBIT-calendar-feed-PRD.md      ← feed product requirements
     orbit-tech-plan.md              ← this document
-    orbit-cal-user-guide.html       ← interactive URL builder / setup guide
+    orbit-user-guide.html       ← interactive URL builder / setup guide
     ORBIT-infographic.html          ← print-ready 8.5×11 cheat sheet
 ```
 

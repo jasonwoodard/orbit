@@ -13,7 +13,7 @@ A fortnightly family scheduling system and its calendar integration.
 | `docs/orbit-tech-plan.md` | Hosting decisions, repo structure, build sequence, technical spec |
 | `docs/orbit-test-plan.md` | Test cases for rotation logic, ICS output, and parameter handling |
 | `docs/orbit-ics-function.md` | Function reference — endpoint, parameters, response format, examples |
-| `docs/orbit-cal-user-guide.html` | Interactive setup guide (served via GitHub Pages) |
+| `docs/orbit-user-guide.html` | Interactive setup guide (served via GitHub Pages) |
 | `docs/ORBIT-infographic.html` | Print-ready 8.5×11 rotation cheat sheet |
 | `functions/orbit-ics/` | Cloud Function — the ICS feed endpoint |
 
@@ -47,11 +47,11 @@ https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=2&variant=3D
 https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob
 ```
 
-### 2. User guide — `docs/orbit-cal-user-guide.html`
+### 2. User guide — `docs/orbit-user-guide.html`
 
 A self-contained interactive HTML page that walks each parent through building their personal feed URL. Hosted via GitHub Pages. No backend required — URL construction is pure client-side JavaScript.
 
-**Live at:** `https://jasonwoodard.github.io/orbit/orbit-cal-user-guide.html`
+**Live at:** `https://jasonwoodard.github.io/orbit/orbit-user-guide.html`
 
 ---
 

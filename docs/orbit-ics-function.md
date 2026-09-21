@@ -2,7 +2,7 @@
 
 Technical reference for the deployed Cloud Function. This is the API contract: parameters, response format, error behavior, and worked examples.
 
-For a friendlier walkthrough that builds your personal subscription URL for you, use `orbit-cal-user-guide.html` instead. For the rotation rules themselves, see `orbit-core.md`.
+For a friendlier walkthrough that builds your personal subscription URL for you, use `orbit-user-guide.html` instead. For the rotation rules themselves, see `orbit-core.md`.
 
 ---
 

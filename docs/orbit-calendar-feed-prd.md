@@ -159,7 +159,7 @@ https://orbit.example.com/orbitcal.ics?p1=Alice&p2=Bob&me=1&variant=3D
 
 ## User Guide
 
-An interactive HTML setup guide (`orbit-cal-user-guide.html`) accompanies the feed. It walks each parent through building their personal feed URL via a four-step progressive form: names → which week type you start on → options (variant, busy/free) → the generated URL and GCal subscription instructions.
+An interactive HTML setup guide (`orbit-user-guide.html`) accompanies the feed. It walks each parent through building their personal feed URL via a four-step progressive form: names → which week type you start on → options (variant, busy/free) → the generated URL and GCal subscription instructions.
 
 The guide is a self-contained static file. It requires no backend — URL construction is client-side JavaScript. It is hosted via GitHub Pages from the `docs/` directory of the repo.
 
